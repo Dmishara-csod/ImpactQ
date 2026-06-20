@@ -2,6 +2,27 @@ export type InputType = 'jira' | 'pr' | 'requirement'
 export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH'
 export type ActionStatus = 'pending' | 'ready' | 'in_progress' | 'done'
 
+export interface JiraTicket {
+  key: string
+  title: string
+  description: string
+  status: string
+  priority: string
+  type: string
+  assignee: string
+  reporter: string
+  labels: string[]
+  acceptanceCriteria: string[]
+  modules: string[]
+  url: string
+  sprint: string
+  storyPoints: number
+  impactedTestCases: string[]
+  impactedAutomation: string[]
+  created: string
+  updated: string
+}
+
 export interface PrChangeItem {
   id: string
   testFile: string
@@ -53,6 +74,8 @@ export interface ImpactAnalysis {
   id: string
   inputType: InputType
   inputValue: string
+  ticketKeys: string[]
+  tickets: JiraTicket[]
   changeSummary: {
     title: string
     description: string
@@ -74,6 +97,8 @@ export interface ImpactAnalysis {
     repo: string
     framework: string
     testNgSuite: string
+    environment: string
+    repoPath: string
     tests: AutomationTest[]
   }
   coverageGaps: {
@@ -96,5 +121,5 @@ export interface ImpactAnalysis {
 
 export interface AnalysisInput {
   inputType: InputType
-  inputValue: string
+  ticketKeys: string[]
 }

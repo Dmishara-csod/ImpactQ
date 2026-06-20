@@ -1,21 +1,36 @@
 import { AnalysisLoading } from '@/components/AnalysisLoading'
-import { ActionsBanner } from '@/components/Layout'
+import { ActionsBanner, TicketsBanner } from '@/components/Layout'
 import { ChangeSummaryCard } from '@/components/ChangeSummaryCard'
 import { CodeImpactCard } from '@/components/CodeImpactCard'
 import { CoverageGapsCard } from '@/components/CoverageGapsCard'
+import { ExportReportButton } from '@/components/ExportReportButton'
 import { ImpactedAutomationCard } from '@/components/ImpactedAutomationCard'
 import { ImpactedTestCasesCard } from '@/components/ImpactedTestCasesCard'
+import { IntegrationStatus } from '@/components/IntegrationStatus'
+import { QuickStatsBar } from '@/components/QuickStatsBar'
 import { RecommendationsCard } from '@/components/RecommendationsCard'
 import { RiskChartsCard } from '@/components/RiskChartsCard'
+import { formatAnalyzedAt } from '@/lib/analysisHistory'
+import type { AppSettings } from '@/lib/settings'
 import type { ImpactAnalysis } from '@/types/analysis'
 
 interface DashboardPageProps {
   analysis: ImpactAnalysis | null
   isLoading: boolean
+  analyzedAt?: string | null
+  settings: AppSettings
   onOpenActions?: () => void
+  onOpenTickets?: () => void
 }
 
-export function DashboardPage({ analysis, isLoading, onOpenActions }: DashboardPageProps) {
+export function DashboardPage({
+  analysis,
+  isLoading,
+  analyzedAt,
+  settings,
+  onOpenActions,
+  onOpenTickets,
+}: DashboardPageProps) {
   if (isLoading) {
     return <AnalysisLoading />
   }
@@ -24,14 +39,31 @@ export function DashboardPage({ analysis, isLoading, onOpenActions }: DashboardP
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-sm text-muted-foreground">
-          Analysis for{' '}
-          <span className="font-medium text-foreground">{analysis.inputValue}</span>
-          {' · '}
-          <span className="text-muted-foreground">{analysis.automation.repo}</span>
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-sm text-muted-foreground">
+            Analysis for{' '}
+            <span className="font-medium text-foreground">{analysis.inputValue}</span>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {analysis.ticketKeys.length} tickets · {analysis.automation.repo} ·{' '}
+            {analysis.automation.environment}
+            {analyzedAt && ` · ${formatAnalyzedAt(analyzedAt)}`}
+          </p>
+        </div>
+        <ExportReportButton analysis={analysis} />
       </div>
+
+      <QuickStatsBar analysis={analysis} />
+
+      {onOpenTickets && (
+        <TicketsBanner
+          count={analysis.tickets.length}
+          onOpenTickets={onOpenTickets}
+        />
+      )}
+
+      <IntegrationStatus settings={settings} />
 
       {onOpenActions && <ActionsBanner onOpenActions={onOpenActions} />}
 

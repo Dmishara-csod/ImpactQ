@@ -24,6 +24,12 @@ export function ImpactedAutomationCard({ automation }: ImpactedAutomationCardPro
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+          <span className="rounded-md bg-muted px-2 py-1">{automation.environment}</span>
+          <code className="block max-w-full truncate rounded-md bg-muted px-2 py-1">
+            {automation.repoPath}
+          </code>
+        </div>
         <code className="block rounded-md bg-muted px-2 py-1 text-xs">
           {automation.testNgSuite}
         </code>

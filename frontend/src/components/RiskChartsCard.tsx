@@ -21,6 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { useTheme } from '@/hooks/useTheme'
 import type { ImpactAnalysis, RiskLevel } from '@/types/analysis'
 
 interface RiskChartsCardProps {
@@ -42,6 +43,18 @@ const riskVariant: Record<RiskLevel, 'success' | 'warning' | 'danger'> = {
 const coverageColors = ['#6366f1', '#0ea5e9', '#ef4444']
 
 export function RiskChartsCard({ analysis }: RiskChartsCardProps) {
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === 'dark'
+  const tickColor = isDark ? '#94a3b8' : '#64748b'
+  const gaugeBg = isDark ? '#334155' : '#e2e8f0'
+  const tooltipStyle = {
+    borderRadius: 8,
+    border: isDark ? '1px solid #334155' : '1px solid #e2e8f0',
+    background: isDark ? '#1e293b' : '#ffffff',
+    color: isDark ? '#f1f5f9' : '#0f172a',
+    fontSize: 12,
+  }
+
   const { risk, changeSummary, codeImpact, testRail, automation, coverageGaps } =
     analysis
 
@@ -108,7 +121,7 @@ export function RiskChartsCard({ analysis }: RiskChartsCardProps) {
                 endAngle={-270}
               >
                 <RadialBar
-                  background={{ fill: 'var(--muted)' }}
+                  background={{ fill: gaugeBg }}
                   dataKey="value"
                   cornerRadius={6}
                 />
@@ -139,19 +152,12 @@ export function RiskChartsCard({ analysis }: RiskChartsCardProps) {
             <BarChart data={impactData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <XAxis
                 dataKey="module"
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 11, fill: tickColor }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis hide />
-              <Tooltip
-                contentStyle={{
-                  borderRadius: 8,
-                  border: '1px solid var(--border)',
-                  background: 'var(--card)',
-                  fontSize: 12,
-                }}
-              />
+              <Tooltip contentStyle={tooltipStyle} />
               <Bar dataKey="files" name="Files" fill="#6366f1" radius={[4, 4, 0, 0]} />
               <Bar dataKey="tests" name="Tests" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -179,14 +185,7 @@ export function RiskChartsCard({ analysis }: RiskChartsCardProps) {
                     />
                   ))}
                 </Pie>
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: 8,
-                    border: '1px solid var(--border)',
-                    background: 'var(--card)',
-                    fontSize: 12,
-                  }}
-                />
+                <Tooltip contentStyle={tooltipStyle} />
               </PieChart>
             </ResponsiveContainer>
             <div className="mt-1 flex flex-wrap gap-2 text-[10px] text-muted-foreground">
@@ -217,7 +216,7 @@ export function RiskChartsCard({ analysis }: RiskChartsCardProps) {
                   type="category"
                   dataKey="label"
                   width={64}
-                  tick={{ fontSize: 10 }}
+                  tick={{ fontSize: 10, fill: tickColor }}
                   axisLine={false}
                   tickLine={false}
                 />

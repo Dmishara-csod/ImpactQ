@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "jetbrains": {
+      "command": "npx",
+      "args": ["-y", "@jetbrains/mcp-server"],
+      "env": {}
+    },
+    "testrail": {
+      "comment": "Replace with your TestRail MCP server command once installed",
+      "command": "npx",
+      "args": ["-y", "testrail-mcp-server"],
+      "env": {
+        "TESTRAIL_URL": "https://testrail.csod.com",
+        "TESTRAIL_USER": "your-email@company.com",
+        "TESTRAIL_API_KEY": "your-api-key"
+      }
+    },
+    "playwright": {
+      "comment": "Microsoft Playwright MCP for browser automation",
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"],
+      "env": {}
+    }
+  }
+}

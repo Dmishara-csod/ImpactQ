@@ -3,6 +3,7 @@ import { Bot, ClipboardList, GitPullRequest } from 'lucide-react'
 import { CursorMcpPanel } from '@/components/actions/CursorMcpPanel'
 import { PrActionsPanel } from '@/components/actions/PrActionsPanel'
 import { TestRailMcpPanel } from '@/components/actions/TestRailMcpPanel'
+import { ActionChecklist } from '@/components/ActionChecklist'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import type { ImpactAnalysis } from '@/types/analysis'
 
@@ -22,6 +23,8 @@ export function ActionsPage({ analysis }: ActionsPageProps) {
           suites and update TestRail cases on testrail.csod.com.
         </p>
       </div>
+
+      <ActionChecklist analysis={analysis} />
 
       <Tabs defaultValue="pr">
         <TabsList className="grid w-full grid-cols-3">

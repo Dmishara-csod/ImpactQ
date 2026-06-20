@@ -1,4 +1,7 @@
-import type { AnalysisInput, ImpactAnalysis } from '@/types/analysis'
+import type { AnalysisInput, ImpactAnalysis, RiskLevel } from '@/types/analysis'
+import type { AppSettings } from '@/lib/settings'
+import { buildJiraTicket } from '@/data/jiraTicketCatalog'
+import { formatTicketKeys } from '@/lib/parseTickets'
 
 const TESTRAIL_BASE = 'https://testrail.csod.com/index.php?/cases/view'
 const GALAXY_REPO = 'galaxy-automation'
@@ -7,20 +10,49 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-export async function analyzeChange(input: AnalysisInput): Promise<ImpactAnalysis> {
+function unique<T>(items: T[]): T[] {
+  return [...new Set(items)]
+}
+
+function computeRisk(ticketCount: number, moduleCount: number): { score: number; level: RiskLevel } {
+  const score = Math.min(95, 55 + ticketCount * 8 + moduleCount * 5)
+  const level: RiskLevel = score >= 75 ? 'HIGH' : score >= 55 ? 'MEDIUM' : 'LOW'
+  return { score, level }
+}
+
+export async function analyzeChange(
+  input: AnalysisInput,
+  settings?: AppSettings,
+): Promise<ImpactAnalysis> {
   await delay(1500)
 
-  const jiraRef = input.inputValue.trim() || 'GALXY-1234'
+  const ticketKeys =
+    input.ticketKeys.length > 0 ? input.ticketKeys : ['GALXY-482']
+  const jiraBase = settings?.jiraBaseUrl ?? 'https://jira.csod.com'
+  const repoPath = settings?.automationPath ?? 'C:\\Users\\vrutikpatwa\\galaxy-automation'
+  const environment = settings?.environment ?? 'PRESTAGE'
+  const testRailProject = settings?.testRailProjectId ?? '49'
+  const jiraRef = formatTicketKeys(ticketKeys)
 
+  const tickets = ticketKeys.map((key) => buildJiraTicket(key, jiraBase))
+  const allModules = unique(tickets.flatMap((t) => t.modules))
+  const { score, level } = computeRisk(ticketKeys.length, allModules.length)
   return {
     id: crypto.randomUUID(),
     inputType: input.inputType,
     inputValue: jiraRef,
+    ticketKeys,
+    tickets,
     changeSummary: {
-      title: 'Admin Theme & Branding — custom header logo and profile banner',
+      title:
+        ticketKeys.length === 1
+          ? tickets[0].title
+          : `Combined impact — ${ticketKeys.length} Jira stories`,
       description:
-        'Enhance portal theme and branding configuration to support custom header logos, profile banner uploads, and theme creation workflows in Galaxy Admin.',
-      modules: ['admin', 'portal', 'theme_and_branding'],
+        tickets.length === 1
+          ? tickets[0].description
+          : `Impact analysis across ${ticketKeys.join(', ')} covering admin portal theme, branding, and profile configuration changes in Galaxy.`,
+      modules: allModules,
       businessCapability: 'Portal configuration and white-label branding',
       functionalAreas: [
         'Theme and branding admin pages',
@@ -47,7 +79,7 @@ export async function analyzeChange(input: AnalysisInput): Promise<ImpactAnalysi
       ],
     },
     testRail: {
-      projectId: '49',
+      projectId: testRailProject,
       suiteName: 'Picasso Admin Regression',
       testCases: [
         {
@@ -86,6 +118,8 @@ export async function analyzeChange(input: AnalysisInput): Promise<ImpactAnalysi
       repo: GALAXY_REPO,
       framework: 'Java Playwright + TestNG + Allure',
       testNgSuite: 'src/test/resources/testng_suites/Admin_Sanity_Test_Suite.xml',
+      environment,
+      repoPath,
       tests: [
         {
           file: 'src/test/java/com/qa/galaxy/admin/AdminThemeAndBrandingTest.java',
@@ -131,19 +165,20 @@ export async function analyzeChange(input: AnalysisInput): Promise<ImpactAnalysi
       ],
     },
     risk: {
-      score: 74,
-      level: 'HIGH',
+      score,
+      level,
       factors: [
-        '3 modules impacted (admin, portal, theme_and_branding)',
-        '5 page objects and 1 test class affected',
-        '2 missing automation areas in galaxy-automation',
-        'Admin Sanity suite must pass before release',
+        `${ticketKeys.length} Jira ticket${ticketKeys.length > 1 ? 's' : ''} analyzed`,
+        `${allModules.length} modules impacted (${allModules.join(', ')})`,
+        '5 page objects and 1 test class affected in galaxy-automation',
+        `${ticketKeys.length > 2 ? 'Elevated' : 'Standard'} regression scope — Admin Sanity suite required`,
       ],
     },
     recommendations: [
+      `Review ticket details for ${jiraRef} before merging`,
       'Run Admin_Sanity_Test_Suite.xml on PRESTAGE before merge',
-      'Update AdminThemeAndBrandingTest.java for new header logo validation',
-      'Add 2 new TestRail cases for theme preview breakpoints',
+      'Update AdminThemeAndBrandingTest.java for impacted stories',
+      `Add TestRail cases for gaps across ${ticketKeys.length} stories`,
       'Review AdminBrandingPage.java locators after UI changes',
     ],
     actionPlan: {
@@ -203,8 +238,8 @@ export async function analyzeChange(input: AnalysisInput): Promise<ImpactAnalysi
         ],
         prBody: `## ImpactIQ — galaxy-automation coverage PR
 
-### Jira
-${jiraRef}
+### Jira tickets
+${ticketKeys.map((k) => `- ${k}`).join('\n')}
 
 ### Context
 Admin Theme & Branding changes impact portal configuration, profile banner uploads, and header logo settings.
@@ -297,7 +332,7 @@ If tests fail, inspect Allure results in target/allure-results and fix locators.
           cursorPrompt: `Using TestRail MCP (project 49), create a new test case:
 Title: Theme preview across mobile and desktop breakpoints
 Suite: Admin Theme & Branding
-Link to Jira ${jiraRef}. Priority: High.
+Link to Jira tickets: ${jiraRef}. Priority: High.
 Add @TestRailCases mapping in AdminThemeAndBrandingTest.java after creation.`,
         },
         {
