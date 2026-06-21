@@ -45,8 +45,13 @@ function mapBackendStatus(
   return [
     {
       name: 'Jira',
-      detail: backend.jira.baseUrl,
-      status: backend.jira.mode === 'mock' ? 'mock' : 'connected',
+      detail: backend.jira.connection?.ok
+        ? `${backend.jira.baseUrl} · ${backend.jira.connection.displayName}`
+        : backend.jira.configured
+          ? `${backend.jira.baseUrl} · connection failed`
+          : backend.jira.baseUrl,
+      status:
+        backend.jira.connection?.ok ? 'connected' : backend.jira.mode === 'mock' ? 'mock' : 'offline',
     },
     {
       name: 'TestRail',
@@ -61,9 +66,9 @@ function mapBackendStatus(
       status: backend.automation.exists ? 'connected' : 'offline',
     },
     {
-      name: 'OpenAI',
-      detail: backend.openAi.configured ? 'Gap detection enabled' : 'Rule-based fallback',
-      status: backend.openAi.configured ? 'connected' : 'ready',
+      name: 'Cursor MCP',
+      detail: backend.cursor?.hint ?? 'JetBrains · Playwright · TestRail',
+      status: 'ready',
     },
     {
       name: 'Environment',

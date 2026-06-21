@@ -1,6 +1,8 @@
 import { config } from '../config.js'
 
-export function buildActionPlan({ ticketKeys, tickets, testCases, automation, gaps }) {
+export function buildActionPlan({ ticketKeys, tickets, testCases, automation, gaps, settings = {}, cursorGapAction }) {
+  const environment = settings.environment || config.automation.environment
+  const projectId = settings.testRailProjectId || config.testRail.projectId
   const jiraRef = ticketKeys.join(', ')
   const testFiles = automation.tests.filter((t) => t.file.includes('Test.java'))
 
@@ -50,6 +52,7 @@ mvn test -DsuiteXmlFile=src/test/resources/testng_suites/Admin_Sanity_Test_Suite
 \`\`\``,
     },
     cursor: [
+      ...(cursorGapAction ? [cursorGapAction] : []),
       {
         id: 'cursor-1',
         category: 'code',
@@ -74,7 +77,7 @@ mvn test -DsuiteXmlFile=src/test/resources/testng_suites/Admin_Sanity_Test_Suite
         cursorPrompt: `Run in galaxy-automation:
 mvn test -DsuiteXmlFile=src/test/resources/testng_suites/Admin_Sanity_Test_Suite.xml
 
-Environment: ${config.automation.environment}. Fix failures and re-run.`,
+Environment: ${environment}. Fix failures and re-run.`,
       },
     ],
     testRail: gaps.missingScenarios.slice(0, 3).map((scenario, index) => ({
@@ -88,7 +91,7 @@ Environment: ${config.automation.environment}. Fix failures and re-run.`,
         'Verify expected outcome',
       ],
       status: 'ready',
-      cursorPrompt: `Using TestRail MCP (project ${config.testRail.projectId}), create test case:
+      cursorPrompt: `Using TestRail MCP (project ${projectId}), create test case:
 Title: ${scenario}
 Suite: Admin Theme & Branding
 Link to Jira: ${jiraRef}`,
@@ -105,33 +108,40 @@ export function mapTicketImpact(tickets, testCases, automationTests) {
     ].map((k) => k.toLowerCase())
 
     const relatedTests = automationTests.filter((test) =>
-      ticketKeywords.some(
-        (kw) =>
-          kw.length > 3 &&
-          (test.testClass.toLowerCase().includes(kw) ||
-            test.file.toLowerCase().includes(kw)),
-      ),
+      (ticket.impactedAutomation || []).some((entry) => entry.startsWith(`${test.testClass}.`)),
     )
 
-    const relatedCaseIds = new Set()
-    relatedTests.forEach((t) => t.testRailIds.forEach((id) => relatedCaseIds.add(`C${id}`)))
+    const relatedCaseIds = new Set(ticket.impactedTestCases || [])
+
+    for (const test of relatedTests) {
+      const methodNames = (ticket.impactedAutomation || [])
+        .filter((entry) => entry.startsWith(`${test.testClass}.`))
+        .map((entry) => entry.slice(test.testClass.length + 1))
+
+      for (const methodName of methodNames) {
+        const method = test.methods?.find((m) => m.name === methodName)
+        if (method) {
+          method.testRailIds.forEach((id) => relatedCaseIds.add(`C${id}`))
+        }
+      }
+    }
 
     testCases.forEach((c) => {
-      if (ticketKeywords.some((kw) => kw.length > 3 && c.title.toLowerCase().includes(kw))) {
-        relatedCaseIds.add(c.id)
-      }
+      const titleMatch = ticketKeywords.some(
+        (kw) => kw.length > 4 && c.title.toLowerCase().includes(kw),
+      )
+      if (titleMatch) relatedCaseIds.add(c.id)
     })
-
-    if (ticket.impactedTestCases?.length) {
-      ticket.impactedTestCases.forEach((id) => relatedCaseIds.add(id))
-    }
 
     return {
       ...ticket,
       impactedTestCases: [...relatedCaseIds],
-      impactedAutomation: relatedTests.flatMap((t) =>
-        t.testMethods.slice(0, 2).map((m) => `${t.testClass}.${m}`),
-      ),
+      impactedAutomation:
+        ticket.impactedAutomation?.length > 0
+          ? ticket.impactedAutomation
+          : relatedTests.flatMap((t) =>
+              t.testMethods.slice(0, 2).map((m) => `${t.testClass}.${m}`),
+            ),
     }
   })
 }

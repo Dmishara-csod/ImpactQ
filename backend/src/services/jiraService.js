@@ -1,4 +1,4 @@
-import { config } from '../config.js'
+import { config, jiraConfigured } from '../config.js'
 
 const CATALOG = {
   'GALXY-482': {
@@ -22,6 +22,8 @@ const CATALOG = {
     keywords: ['theme', 'branding', 'admin'],
     created: '2025-05-12',
     updated: '2025-06-18',
+    impactedTestCases: ['C29925265'],
+    impactedAutomation: ['AdminThemeAndBrandingTest.testVerifyThemeAndBrandingPageLoads'],
   },
   'GALXY-1201': {
     title: 'Configure custom header logo in Theme & Branding',
@@ -44,6 +46,8 @@ const CATALOG = {
     keywords: ['header', 'logo', 'branding'],
     created: '2025-05-20',
     updated: '2025-06-19',
+    impactedTestCases: ['C29906508', 'C29906509'],
+    impactedAutomation: ['AdminThemeAndBrandingTest.testVerifyHeaderLogoConfiguration'],
   },
   'GALXY-890': {
     title: 'Profile banner upload and profile page sync',
@@ -66,6 +70,8 @@ const CATALOG = {
     keywords: ['profile', 'banner', 'upload'],
     created: '2025-06-01',
     updated: '2025-06-17',
+    impactedTestCases: ['C29906501', 'C29906503'],
+    impactedAutomation: ['AdminThemeAndBrandingTest.testVerifyUploadBannerImage'],
   },
   'GALXY-1305': {
     title: 'Create custom theme workflow',
@@ -88,49 +94,179 @@ const CATALOG = {
     keywords: ['theme', 'create', 'custom'],
     created: '2025-06-05',
     updated: '2025-06-19',
+    impactedTestCases: ['C29906512', 'C29906513'],
+    impactedAutomation: ['AdminThemeAndBrandingTest.testVerifyCreateCustomTheme'],
   },
 }
 
-/** Jira integration placeholder — returns mock catalog entries until real Jira API is wired. */
-export function getJiraTickets(ticketKeys) {
-  const baseUrl = config.jira.baseUrl.replace(/\/$/, '')
+function authHeaders() {
+  return {
+    Authorization: `Bearer ${config.jira.apiToken}`,
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  }
+}
 
-  return ticketKeys.map((key) => {
-    const template = CATALOG[key]
-    const url = `${baseUrl}/browse/${key}`
+async function jiraFetch(path) {
+  const url = `${config.jira.baseUrl}/rest/api/2/${path}`
+  const response = await fetch(url, { headers: authHeaders() })
 
-    if (template) {
-      return {
-        key,
-        url,
-        ...template,
-        impactedTestCases: [],
-        impactedAutomation: [],
-      }
-    }
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(`Jira API ${response.status}: ${text.slice(0, 200)}`)
+  }
 
+  return response.json()
+}
+
+function plainText(value) {
+  if (!value) return ''
+  if (typeof value === 'string') return value.trim()
+  return JSON.stringify(value)
+}
+
+function extractAcceptanceCriteria(description) {
+  const text = plainText(description)
+  if (!text) return ['Feature behaves as specified in Jira']
+
+  const sectionMatch = text.match(
+    /acceptance criteria[:\s]*([\s\S]*?)(?:\n\s*\n|\n\s*[-*#]|$)/i,
+  )
+  if (sectionMatch) {
+    const lines = sectionMatch[1]
+      .split('\n')
+      .map((l) => l.replace(/^[\s\-*•\d.)]+/, '').trim())
+      .filter((l) => l.length > 3)
+    if (lines.length > 0) return lines.slice(0, 8)
+  }
+
+  const bulletLines = text
+    .split('\n')
+    .map((l) => l.replace(/^[\s\-*•\d.)]+/, '').trim())
+    .filter((l) => l.length > 8)
+  return bulletLines.length > 0 ? bulletLines.slice(0, 5) : [text.slice(0, 200)]
+}
+
+function deriveKeywords(ticket) {
+  const words = new Set(ticket.keywords || [])
+  ticket.labels?.forEach((l) => words.add(l.toLowerCase()))
+  ticket.modules?.forEach((m) => words.add(m.toLowerCase()))
+  ticket.title
+    .toLowerCase()
+    .split(/\W+/)
+    .filter((w) => w.length > 3)
+    .forEach((w) => words.add(w))
+  return [...words]
+}
+
+function parseJiraIssue(issue) {
+  const fields = issue.fields
+  const key = issue.key
+  const description = plainText(fields.description)
+  const labels = fields.labels || []
+  const components = (fields.components || []).map((c) => c.name.toLowerCase().replace(/\s+/g, '_'))
+  const modules = components.length > 0 ? components : labels.slice(0, 3)
+
+  const ticket = {
+    key,
+    url: `${config.jira.baseUrl}/browse/${key}`,
+    title: fields.summary || key,
+    description: description || `Jira issue ${key}`,
+    status: fields.status?.name || 'Unknown',
+    priority: fields.priority?.name || 'Medium',
+    type: fields.issuetype?.name || 'Issue',
+    assignee: fields.assignee?.displayName || 'Unassigned',
+    reporter: fields.reporter?.displayName || fields.creator?.displayName || 'Unknown',
+    labels,
+    acceptanceCriteria: extractAcceptanceCriteria(description),
+    modules: modules.length > 0 ? modules : ['general'],
+    sprint: fields.customfield_10004?.name || fields.customfield_10004 || 'Current Sprint',
+    storyPoints: fields.customfield_10002 ?? fields.customfield_10006 ?? 0,
+    keywords: [],
+    impactedTestCases: [],
+    impactedAutomation: [],
+    created: fields.created?.slice(0, 10) || '',
+    updated: fields.updated?.slice(0, 10) || '',
+  }
+
+  ticket.keywords = deriveKeywords(ticket)
+  return ticket
+}
+
+function applyCatalogOverlay(ticket) {
+  const template = CATALOG[ticket.key]
+  if (!template) return ticket
+
+  return {
+    ...ticket,
+    impactedTestCases: [...(template.impactedTestCases || ticket.impactedTestCases)],
+    impactedAutomation: [...(template.impactedAutomation || ticket.impactedAutomation)],
+    keywords: deriveKeywords({ ...ticket, keywords: template.keywords || ticket.keywords }),
+    modules:
+      ticket.modules.length > 0 && ticket.modules[0] !== 'general'
+        ? ticket.modules
+        : template.modules,
+  }
+}
+
+function buildCatalogTicket(key) {
+  const baseUrl = config.jira.baseUrl
+  const template = CATALOG[key]
+  const url = `${baseUrl}/browse/${key}`
+
+  if (template) {
+    const { impactedTestCases = [], impactedAutomation = [], ...rest } = template
     return {
       key,
       url,
-      title: `Story ${key}`,
-      description: `Placeholder for ${key}. Connect Jira API to fetch real story data.`,
-      status: 'To Do',
-      priority: 'Medium',
-      type: 'Story',
-      assignee: 'Unassigned',
-      reporter: 'Product Owner',
-      labels: ['impact-analysis'],
-      acceptanceCriteria: ['Feature behaves as specified in Jira'],
-      modules: ['admin'],
-      sprint: 'Current Sprint',
-      storyPoints: 3,
-      keywords: [key.toLowerCase()],
-      impactedTestCases: [],
-      impactedAutomation: [],
-      created: '2025-06-01',
-      updated: '2025-06-20',
+      ...rest,
+      impactedTestCases: [...impactedTestCases],
+      impactedAutomation: [...impactedAutomation],
+      keywords: deriveKeywords({ ...rest, key }),
     }
-  })
+  }
+
+  return {
+    key,
+    url,
+    title: `Story ${key}`,
+    description: `Placeholder for ${key}.`,
+    status: 'To Do',
+    priority: 'Medium',
+    type: 'Story',
+    assignee: 'Unassigned',
+    reporter: 'Product Owner',
+    labels: ['impact-analysis'],
+    acceptanceCriteria: ['Feature behaves as specified in Jira'],
+    modules: ['admin'],
+    sprint: 'Current Sprint',
+    storyPoints: 3,
+    keywords: [key.toLowerCase()],
+    impactedTestCases: [],
+    impactedAutomation: [],
+    created: '2025-06-01',
+    updated: new Date().toISOString().slice(0, 10),
+  }
+}
+
+async function fetchJiraTicket(key) {
+  try {
+    const issue = await jiraFetch(
+      `issue/${key}?fields=summary,description,status,priority,issuetype,assignee,reporter,creator,labels,components,customfield_10002,customfield_10004,customfield_10006,created,updated`,
+    )
+    return applyCatalogOverlay(parseJiraIssue(issue))
+  } catch (err) {
+    console.warn(`[jira] Failed to fetch ${key}:`, err.message)
+    return buildCatalogTicket(key)
+  }
+}
+
+export async function getJiraTickets(ticketKeys) {
+  if (!jiraConfigured()) {
+    return ticketKeys.map(buildCatalogTicket)
+  }
+
+  return Promise.all(ticketKeys.map(fetchJiraTicket))
 }
 
 export function getTicketKeywords(tickets) {
@@ -138,7 +274,30 @@ export function getTicketKeywords(tickets) {
   for (const ticket of tickets) {
     ticket.modules?.forEach((m) => words.add(m.toLowerCase()))
     ticket.keywords?.forEach((k) => words.add(k.toLowerCase()))
-    ticket.title.toLowerCase().split(/\W+/).filter((w) => w.length > 3).forEach((w) => words.add(w))
+    ticket.title
+      .toLowerCase()
+      .split(/\W+/)
+      .filter((w) => w.length > 3)
+      .forEach((w) => words.add(w))
   }
   return [...words]
+}
+
+export function getJiraStatus() {
+  return {
+    configured: jiraConfigured(),
+    mode: jiraConfigured() ? 'api' : 'mock',
+    baseUrl: config.jira.baseUrl,
+    user: config.jira.user || undefined,
+  }
+}
+
+export async function verifyJiraConnection() {
+  if (!jiraConfigured()) return { ok: false, reason: 'JIRA_API_TOKEN not set' }
+  try {
+    const user = await jiraFetch('myself')
+    return { ok: true, displayName: user.displayName, email: user.emailAddress }
+  } catch (err) {
+    return { ok: false, reason: err.message }
+  }
 }

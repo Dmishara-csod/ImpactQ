@@ -6,7 +6,33 @@ import { buildActionPlan, mapTicketImpact } from './actionPlanService.js'
 import { getJiraTickets, getTicketKeywords } from './jiraService.js'
 import { scanAutomationRepo } from './automationScanner.js'
 import { resolveTestCases } from './testRailService.js'
-import { detectCoverageGaps, generateRecommendations } from './openAiService.js'
+import { detectCoverageGaps, generateRecommendations, buildCursorMcpGapAction } from './cursorMcpAnalysisService.js'
+
+function collectAutomationCaseIds(tickets, automationTests) {
+  const catalogLinks = tickets.flatMap((t) =>
+    (t.impactedAutomation || []).map((entry) => {
+      const [className, ...rest] = entry.split('.')
+      return { className, methodName: rest.join('.') }
+    }),
+  )
+
+  if (catalogLinks.length === 0) {
+    return automationTests.slice(0, 3).flatMap((t) => t.testRailIds)
+  }
+
+  const ids = []
+  for (const test of automationTests) {
+    for (const link of catalogLinks) {
+      if (test.testClass !== link.className) continue
+      const method = test.methods?.find((m) => m.name === link.methodName)
+      if (method) {
+        ids.push(...method.testRailIds)
+      }
+    }
+  }
+
+  return ids
+}
 
 function unique(items) {
   return [...new Set(items)]
@@ -24,18 +50,18 @@ export async function runAnalysis({ ticketKeys, settings = {} }) {
   const environment = settings.environment || config.automation.environment
   const projectId = settings.testRailProjectId || config.testRail.projectId
 
-  let tickets = getJiraTickets(keys)
+  let tickets = await getJiraTickets(keys)
   const keywords = getTicketKeywords(tickets)
 
-  const automationScan = await scanAutomationRepo(keywords, { repoPath })
+  const automationScan = await scanAutomationRepo(keywords, { repoPath, environment })
   const caseIds = unique([
-    ...automationScan.allTestRailIds,
+    ...collectAutomationCaseIds(tickets, automationScan.tests),
     ...tickets.flatMap((t) =>
-      (t.impactedTestCases || []).map((id) => id.replace(/^C/, '')),
+      (t.impactedTestCases || []).map((id) => id.replace(/^C/i, '')),
     ),
   ])
 
-  const testCases = await resolveTestCases(caseIds, keywords)
+  const testCases = await resolveTestCases(caseIds, keywords, { projectId })
   const testFiles = automationScan.tests.filter((t) => t.file.includes('Test.java'))
 
   tickets = mapTicketImpact(tickets, testCases, testFiles)
@@ -46,11 +72,12 @@ export async function runAnalysis({ ticketKeys, settings = {} }) {
     gaps.missingScenarios.length + gaps.missingAutomation.length + gaps.edgeCases.length
 
   const { score, level } = computeRisk(keys.length, allModules.length, gapCount)
+  const jiraSource = config.jira.apiToken ? 'api' : 'mock-catalog'
   const risk = {
     score,
     level,
     factors: [
-      `${keys.length} Jira ticket${keys.length > 1 ? 's' : ''} analyzed (mock data — Jira API pending)`,
+      `${keys.length} Jira ticket${keys.length > 1 ? 's' : ''} analyzed (${jiraSource})`,
       `${allModules.length} modules impacted (${allModules.join(', ')})`,
       `${testCases.length} TestRail cases linked`,
       `${testFiles.length} automation test classes matched`,
@@ -65,6 +92,14 @@ export async function runAnalysis({ ticketKeys, settings = {} }) {
     testCases,
     automation: automationScan,
     gaps,
+    settings: { environment, testRailProjectId: projectId },
+    cursorGapAction: buildCursorMcpGapAction({
+      ticketKeys: keys,
+      tickets,
+      testCases,
+      automation: automationScan,
+      gaps,
+    }),
   })
 
   const analysis = {
@@ -87,6 +122,17 @@ export async function runAnalysis({ ticketKeys, settings = {} }) {
       functionalAreas: unique(
         tickets.flatMap((t) => t.labels).concat(['Admin configuration', 'Test impact analysis']),
       ).slice(0, 6),
+    },
+    meta: {
+      dataSources: {
+        jira: jiraSource,
+        testRail: testCases.some((c) => !c.title.startsWith('TestRail case C'))
+          ? 'api'
+          : 'fallback-ids',
+        automation: automationScan.tests.length > 0 ? 'repo-scan' : 'none',
+        analysis: 'cursor-mcp',
+      },
+      analyzedAt: new Date().toISOString(),
     },
     codeImpact: automationScan.codeImpact,
     testRail: {
@@ -134,4 +180,17 @@ export async function listAnalyses(limit = 20) {
   if (AnalysisModel.db?.readyState !== 1) return []
   const docs = await AnalysisModel.find().sort({ createdAt: -1 }).limit(limit)
   return docs.map((d) => d.payload)
+}
+
+export async function listAnalysisSummaries(limit = 20) {
+  const analyses = await listAnalyses(limit)
+  return analyses.map((a) => ({
+    id: a.id,
+    inputValue: a.inputValue,
+    title: a.changeSummary?.title ?? a.inputValue,
+    riskLevel: a.risk?.level ?? 'MEDIUM',
+    riskScore: a.risk?.score ?? 0,
+    analyzedAt: a.meta?.analyzedAt ?? new Date().toISOString(),
+    ticketKeys: a.ticketKeys ?? [],
+  }))
 }

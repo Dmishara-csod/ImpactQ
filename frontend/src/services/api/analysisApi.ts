@@ -47,3 +47,15 @@ export async function fetchHealth() {
   if (!response.ok) throw new Error('Backend health check failed')
   return response.json()
 }
+
+export async function fetchHistory(limit = 20) {
+  const response = await fetch(`${API_BASE}/api/history?limit=${limit}`)
+  if (!response.ok) throw new Error('Failed to fetch history')
+  return response.json()
+}
+
+export async function fetchAnalysisById(id: string) {
+  const response = await fetch(`${API_BASE}/api/history/${id}`)
+  if (!response.ok) throw new Error('Analysis not found')
+  return response.json() as Promise<ImpactAnalysis>
+}

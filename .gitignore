@@ -38,3 +38,6 @@ venv/
 
 # Misc
 *.local
+
+# Cursor MCP (contains API keys)
+.cursor/mcp.json

@@ -1,13 +1,15 @@
 import { config, testRailConfigured } from '../config.js'
 
-function authHeader() {
-  const credentials = Buffer.from(`${config.testRail.user}:${config.testRail.apiKey}`).toString('base64')
+function authHeader(user = config.testRail.user, apiKey = config.testRail.apiKey) {
+  const credentials = Buffer.from(`${user}:${apiKey}`).toString('base64')
   return { Authorization: `Basic ${credentials}`, 'Content-Type': 'application/json' }
 }
 
-async function testRailFetch(path) {
-  const url = `${config.testRail.url}/index.php?/api/v2/${path}`
-  const response = await fetch(url, { headers: authHeader() })
+async function testRailFetch(path, options = {}) {
+  const url = `${options.url || config.testRail.url}/index.php?/api/v2/${path}`
+  const response = await fetch(url, {
+    headers: authHeader(options.user, options.apiKey),
+  })
 
   if (!response.ok) {
     const text = await response.text()
@@ -17,7 +19,7 @@ async function testRailFetch(path) {
   return response.json()
 }
 
-function formatCase(testCase, suiteName = 'TestRail') {
+function formatCase(testCase, suiteName = 'Picasso Admin Regression') {
   const numericId = String(testCase.id)
   return {
     id: `C${numericId}`,
@@ -26,6 +28,22 @@ function formatCase(testCase, suiteName = 'TestRail') {
     url: `${config.testRail.url}/index.php?/cases/view/${numericId}`,
     numericId,
   }
+}
+
+function normalizeCasesResponse(data) {
+  if (Array.isArray(data)) return data
+  if (data?.cases && Array.isArray(data.cases)) return data.cases
+  return []
+}
+
+export function buildFallbackCases(caseIds) {
+  const uniqueIds = [...new Set(caseIds.map((id) => String(id).replace(/^C/i, '')))]
+  return uniqueIds.map((id) => ({
+    id: `C${id}`,
+    title: `TestRail case C${id}`,
+    suite: 'Picasso Admin Regression',
+    url: `${config.testRail.url}/index.php?/cases/view/${id}`,
+  }))
 }
 
 export async function getTestCasesByIds(caseIds) {
@@ -40,12 +58,16 @@ export async function getTestCasesByIds(caseIds) {
     .map((r) => formatCase(r.value))
 }
 
-export async function searchProjectCases(keywords, limit = 50) {
+export async function searchProjectCases(keywords, options = {}) {
   if (!testRailConfigured()) return []
 
+  const projectId = options.projectId || config.testRail.projectId
+  const limit = options.limit ?? 250
+
   try {
-    const cases = await testRailFetch(`get_cases/${config.testRail.projectId}&limit=${limit}`)
-    if (!Array.isArray(cases)) return []
+    const data = await testRailFetch(`get_cases/${projectId}&limit=${limit}`)
+    const cases = normalizeCasesResponse(data)
+    if (cases.length === 0) return []
 
     const lowerKeywords = keywords.map((k) => k.toLowerCase())
 
@@ -62,9 +84,15 @@ export async function searchProjectCases(keywords, limit = 50) {
   }
 }
 
-export async function resolveTestCases(caseIdsFromAutomation, keywords) {
-  const byId = await getTestCasesByIds([...new Set(caseIdsFromAutomation)])
-  const bySearch = await searchProjectCases(keywords)
+export async function resolveTestCases(caseIdsFromAutomation, keywords, options = {}) {
+  const uniqueIds = [...new Set(caseIdsFromAutomation.map((id) => String(id).replace(/^C/i, '')))]
+
+  if (!testRailConfigured()) {
+    return buildFallbackCases(uniqueIds)
+  }
+
+  const byId = await getTestCasesByIds(uniqueIds)
+  const bySearch = await searchProjectCases(keywords, options)
 
   const seen = new Set(byId.map((c) => c.numericId))
   const merged = [...byId]
@@ -74,6 +102,10 @@ export async function resolveTestCases(caseIdsFromAutomation, keywords) {
       seen.add(c.numericId)
       merged.push(c)
     }
+  }
+
+  if (merged.length === 0 && uniqueIds.length > 0) {
+    return buildFallbackCases(uniqueIds)
   }
 
   return merged.map(({ numericId, ...rest }) => rest)
