@@ -1,0 +1,7 @@
+{
+  "automationRepo": "galaxy-automation",
+  "automationPath": "C:\\Users\\vrutikpatwa\\galaxy-automation",
+  "environment": "PRESTAGE",
+  "testRailProjectId": "49",
+  "jiraBaseUrl": "https://jira.csod.com"
+}

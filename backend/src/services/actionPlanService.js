@@ -1,4 +1,53 @@
 import { config } from '../config.js'
+import { matchImpactedCasesForScenario } from './testRailService.js'
+import {
+  buildScenarioCandidates,
+  filterAcceptanceCriteria,
+  scenarioActionId,
+} from '../utils/testScenarioUtils.js'
+
+function pickSuite(testCases) {
+  return testCases[0]?.suite || 'Picasso Admin Regression'
+}
+
+function buildTestRailActions({ ticketKeys, tickets, testCases, gaps, projectId, jiraRef }) {
+  const uniqueScenarios = buildScenarioCandidates({ gaps, tickets, jiraRef })
+  const suite = pickSuite(testCases)
+
+  return uniqueScenarios.map((scenario) => {
+    const ticketContext = tickets
+      .map((t) => `${t.key}: ${t.title}`)
+      .slice(0, 3)
+      .join('; ')
+    const validAc = tickets.flatMap((t) => filterAcceptanceCriteria(t.acceptanceCriteria || [])).slice(0, 2)
+    const impactedCases = matchImpactedCasesForScenario(scenario, testCases)
+
+    return {
+      id: scenarioActionId(scenario),
+      action: 'create',
+      title: scenario,
+      suite,
+      steps: [
+        `Open feature area for Jira: ${ticketContext || jiraRef}`,
+        ...validAc.map((ac) => `Validate acceptance criteria: ${ac}`),
+        `Execute test scenario: ${scenario}`,
+        'Verify expected outcome and log result in TestRail',
+      ].slice(0, 5),
+      status: 'ready',
+      jiraKeys: ticketKeys,
+      impactedCases,
+      cursorPrompt: `Using TestRail MCP (project ${projectId}), create test case:
+Title: ${scenario}
+Suite: ${suite}
+Link to Jira: ${jiraRef}
+Related tickets: ${ticketContext}
+
+Impacted existing cases: ${impactedCases.map((c) => c.id).join(', ') || 'none'}
+
+After creating the case, map it with @TestRailCases in the impacted automation test class.`,
+    }
+  })
+}
 
 export function buildActionPlan({ ticketKeys, tickets, testCases, automation, gaps, settings = {}, cursorGapAction }) {
   const environment = settings.environment || config.automation.environment
@@ -80,22 +129,14 @@ mvn test -DsuiteXmlFile=src/test/resources/testng_suites/Admin_Sanity_Test_Suite
 Environment: ${environment}. Fix failures and re-run.`,
       },
     ],
-    testRail: gaps.missingScenarios.slice(0, 3).map((scenario, index) => ({
-      id: `tr-action-${index + 1}`,
-      action: 'create',
-      title: scenario,
-      suite: 'Admin Theme & Branding',
-      steps: [
-        'Navigate to impacted admin feature',
-        `Validate: ${scenario}`,
-        'Verify expected outcome',
-      ],
-      status: 'ready',
-      cursorPrompt: `Using TestRail MCP (project ${projectId}), create test case:
-Title: ${scenario}
-Suite: Admin Theme & Branding
-Link to Jira: ${jiraRef}`,
-    })),
+    testRail: buildTestRailActions({
+      ticketKeys,
+      tickets,
+      testCases,
+      gaps,
+      projectId,
+      jiraRef,
+    }),
   }
 }
 
@@ -128,20 +169,36 @@ export function mapTicketImpact(tickets, testCases, automationTests) {
 
     testCases.forEach((c) => {
       const titleMatch = ticketKeywords.some(
-        (kw) => kw.length > 4 && c.title.toLowerCase().includes(kw),
+        (kw) => kw.length > 3 && c.title.toLowerCase().includes(kw),
       )
       if (titleMatch) relatedCaseIds.add(c.id)
     })
 
+    const matchedAutomation = automationTests.filter((test) =>
+      ticketKeywords.some(
+        (kw) =>
+          kw.length > 3 &&
+          (test.testClass.toLowerCase().includes(kw) ||
+            test.file.toLowerCase().includes(kw) ||
+            test.testMethods.some((m) => m.toLowerCase().includes(kw))),
+      ),
+    )
+
+    for (const test of matchedAutomation) {
+      test.testRailIds.forEach((id) => relatedCaseIds.add(`C${id}`))
+    }
+
+    const automationNames = [
+      ...(ticket.impactedAutomation || []),
+      ...matchedAutomation.flatMap((t) =>
+        t.testMethods.slice(0, 2).map((m) => `${t.testClass}.${m}`),
+      ),
+    ]
+
     return {
       ...ticket,
       impactedTestCases: [...relatedCaseIds],
-      impactedAutomation:
-        ticket.impactedAutomation?.length > 0
-          ? ticket.impactedAutomation
-          : relatedTests.flatMap((t) =>
-              t.testMethods.slice(0, 2).map((m) => `${t.testClass}.${m}`),
-            ),
+      impactedAutomation: [...new Set(automationNames)],
     }
   })
 }

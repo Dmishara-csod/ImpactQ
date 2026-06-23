@@ -1,0 +1,386 @@
+{
+  "564efab2-e175-48a2-b80a-0cc49a5983b7": {
+    "tr-action-1": {
+      "actionId": "tr-action-1",
+      "title": "Reject unsupported header logo file format",
+      "suite": "Admin Theme & Branding",
+      "jiraKeys": [
+        "LXC-11986"
+      ],
+      "cursorPrompt": "Using TestRail MCP (project 49), create test case:\nTitle: Reject unsupported header logo file format\nSuite: Admin Theme & Branding\nLink to Jira: LXC-11986\nRelated tickets: LXC-11986: Theme Upload Issue – System Inconsistencies While Saving Main Logo, Favicon, and Admin Panel Logo in Both Old and New Admin\n\nAfter creating the case, map it with @TestRailCases in the impacted automation test class.",
+      "created": {
+        "id": "C29998372",
+        "title": "Reject unsupported header logo file format",
+        "suite": "Galaxy 2.0 LX Web",
+        "url": "https://testrail.csod.com/index.php?/cases/view/29998372",
+        "numericId": "29998372"
+      },
+      "impactedCases": [
+        {
+          "id": "C29906508",
+          "title": "Verify upload image for 'Main Logo'",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29906508",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29906501",
+          "title": "Verify profile banner image can be uploaded on theme and branding",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29906501",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29906504",
+          "title": "Verify uploaded profile banner image can be removed on theme and branding with save",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29906504",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29906505",
+          "title": "Verify uploaded profile banner image can be removed on theme and branding without save",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29906505",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29906509",
+          "title": "Verify remove image for 'Main Logo'",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29906509",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29906551",
+          "title": "Verify upload new profile banner image from Add new theme' page",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29906551",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29906552",
+          "title": "Verify cross icon for uploaded new profile banner image from Add new theme' page",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29906552",
+          "suite": "Galaxy 2.0 LX Admin"
+        }
+      ],
+      "savedAt": "2026-06-21T16:40:55.122Z"
+    }
+  },
+  "ffac85d7-35ca-4f34-bc74-d50642a8418b": {
+    "tr-fallback-1": {
+      "actionId": "tr-fallback-1",
+      "title": "Test coverage for LXC-9072: User is able to create duplicate content layout for community - assignment tab",
+      "suite": "Picasso Admin Regression",
+      "jiraKeys": [
+        "LXC-9072"
+      ],
+      "cursorPrompt": "Using TestRail MCP (project 49), create test case:\nTitle: Test coverage for LXC-9072: User is able to create duplicate content layout for community - assignment tab \nSuite: Picasso Admin Regression\nLink to Jira: LXC-9072\nRelated tickets: LXC-9072: User is able to create duplicate content layout for community - assignment tab \n\nImpacted existing cases: C29888084, C29888087, C29888088, C29888089, C29888090, C29888095, C29888192, C29888193, C29888195, C29907840, C29952707, C29994452, C29966095, C29994471, C29996044, C29962545, C29962546, C29962547, C29962548, C29952779\n\nAfter creating the case, map it with @TestRailCases in the impacted automation test class.",
+      "created": {
+        "id": "C29998373",
+        "title": "Test coverage for LXC-9072: User is able to create duplicate content layout for community - assignment tab",
+        "suite": "Galaxy 2.0 LX Web",
+        "url": "https://testrail.csod.com/index.php?/cases/view/29998373",
+        "numericId": "29998373"
+      },
+      "impactedCases": [
+        {
+          "id": "C29888084",
+          "title": "Verify  the content shared with channel is searchable in the channel search",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888084",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888087",
+          "title": "Verify that the Smartcard/Pathway/Journey shared to the channel is searchable in the channel's custom carousel.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888087",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888088",
+          "title": "Verify that  the content posted to the Channel is searchable  in channel's custom carousel.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888088",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888089",
+          "title": "Verify that the existing content shared to the channel is searchable in the channels custom carousel.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888089",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888090",
+          "title": "Verify that the curated content in the channel is searchable in the channel search and channel's custom carousel.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888090",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888095",
+          "title": "Verify that the user is able to add the the content shared with the channel in the custom carousel of admin console",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888095",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888192",
+          "title": "Verify that user is able to create mandatory community by selecting 'Mandatory community' checkbox in the 'New Community' window",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888192",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888193",
+          "title": "Verify that any user is able to find and join open community created",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888193",
+          "suite": "Galaxy 2.0 LX Web"
+        }
+      ],
+      "savedAt": "2026-06-21T17:00:14.240Z"
+    },
+    "tr-fallback-2": {
+      "actionId": "tr-fallback-2",
+      "title": "Verify: User is able to create duplicate content layout for community - assignment tab",
+      "suite": "Picasso Admin Regression",
+      "jiraKeys": [
+        "LXC-9072"
+      ],
+      "cursorPrompt": "Using TestRail MCP (project 49), create test case:\nTitle: Verify: User is able to create duplicate content layout for community - assignment tab\nSuite: Picasso Admin Regression\nLink to Jira: LXC-9072\nRelated tickets: LXC-9072: User is able to create duplicate content layout for community - assignment tab \n\nImpacted existing cases: C29888084, C29888087, C29888088, C29888089, C29888090, C29888095, C29888192, C29888193, C29888195, C29907840, C29952707, C29994452, C29966095, C29994471, C29996044, C29962545, C29962546, C29962547, C29962548, C29952779\n\nAfter creating the case, map it with @TestRailCases in the impacted automation test class.",
+      "created": {
+        "id": "C29998374",
+        "title": "Verify: User is able to create duplicate content layout for community - assignment tab",
+        "suite": "Galaxy 2.0 LX Web",
+        "url": "https://testrail.csod.com/index.php?/cases/view/29998374",
+        "numericId": "29998374"
+      },
+      "impactedCases": [
+        {
+          "id": "C29888084",
+          "title": "Verify  the content shared with channel is searchable in the channel search",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888084",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888087",
+          "title": "Verify that the Smartcard/Pathway/Journey shared to the channel is searchable in the channel's custom carousel.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888087",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888088",
+          "title": "Verify that  the content posted to the Channel is searchable  in channel's custom carousel.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888088",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888089",
+          "title": "Verify that the existing content shared to the channel is searchable in the channels custom carousel.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888089",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888090",
+          "title": "Verify that the curated content in the channel is searchable in the channel search and channel's custom carousel.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888090",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888095",
+          "title": "Verify that the user is able to add the the content shared with the channel in the custom carousel of admin console",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888095",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888192",
+          "title": "Verify that user is able to create mandatory community by selecting 'Mandatory community' checkbox in the 'New Community' window",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888192",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888193",
+          "title": "Verify that any user is able to find and join open community created",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888193",
+          "suite": "Galaxy 2.0 LX Web"
+        }
+      ],
+      "savedAt": "2026-06-21T17:11:28.408Z"
+    },
+    "tr-fallback-3": {
+      "actionId": "tr-fallback-3",
+      "title": "Verify: CC: [~TMhatre] [~PJoshi]",
+      "suite": "Picasso Admin Regression",
+      "jiraKeys": [
+        "LXC-9072"
+      ],
+      "cursorPrompt": "Using TestRail MCP (project 49), create test case:\nTitle: Verify: CC: [~TMhatre] [~PJoshi]\nSuite: Picasso Admin Regression\nLink to Jira: LXC-9072\nRelated tickets: LXC-9072: User is able to create duplicate content layout for community - assignment tab \n\nImpacted existing cases: C29888084, C29888087, C29888088, C29888089, C29888090, C29888095, C29888192, C29888193, C29888195, C29907840, C29952707, C29994452, C29966095, C29994471, C29996044, C29962545, C29962546, C29962547, C29962548, C29952779\n\nAfter creating the case, map it with @TestRailCases in the impacted automation test class.",
+      "created": {
+        "id": "C29998375",
+        "title": "Verify: CC: [~TMhatre] [~PJoshi]",
+        "suite": "Galaxy 2.0 LX Web",
+        "url": "https://testrail.csod.com/index.php?/cases/view/29998375",
+        "numericId": "29998375"
+      },
+      "impactedCases": [
+        {
+          "id": "C29888084",
+          "title": "Verify  the content shared with channel is searchable in the channel search",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888084",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888087",
+          "title": "Verify that the Smartcard/Pathway/Journey shared to the channel is searchable in the channel's custom carousel.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888087",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888088",
+          "title": "Verify that  the content posted to the Channel is searchable  in channel's custom carousel.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888088",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888089",
+          "title": "Verify that the existing content shared to the channel is searchable in the channels custom carousel.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888089",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888090",
+          "title": "Verify that the curated content in the channel is searchable in the channel search and channel's custom carousel.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888090",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888095",
+          "title": "Verify that the user is able to add the the content shared with the channel in the custom carousel of admin console",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888095",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888192",
+          "title": "Verify that user is able to create mandatory community by selecting 'Mandatory community' checkbox in the 'New Community' window",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888192",
+          "suite": "Galaxy 2.0 LX Web"
+        },
+        {
+          "id": "C29888193",
+          "title": "Verify that any user is able to find and join open community created",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29888193",
+          "suite": "Galaxy 2.0 LX Web"
+        }
+      ],
+      "savedAt": "2026-06-21T17:12:08.587Z"
+    }
+  },
+  "c302d945-b3c1-449b-a389-0ab56ae523af": {
+    "tr-channel-carousel-displays-and-navigates-shared-c": {
+      "actionId": "tr-channel-carousel-displays-and-navigates-shared-c",
+      "title": "Channel carousel displays and navigates shared content correctly",
+      "suite": "Galaxy 2.0 LX Admin",
+      "jiraKeys": [
+        "EP-114081"
+      ],
+      "cursorPrompt": "Using TestRail MCP (project 49), create test case:\nTitle: Channel carousel displays and navigates shared content correctly\nSuite: Galaxy 2.0 LX Admin\nLink to Jira: EP-114081\nRelated tickets: EP-114081: Admin - Broken images for custom carousels in admin\n\nImpacted existing cases: C29905893, C29905894, C29925266, C29925451, C29962545\n\nAfter creating the case, map it with @TestRailCases in the impacted automation test class.",
+      "created": {
+        "id": "C29998381",
+        "title": "Channel carousel displays and navigates shared content correctly",
+        "suite": "Galaxy 2.0 LX Admin",
+        "url": "https://testrail.csod.com/index.php?/cases/view/29998381",
+        "numericId": "29998381"
+      },
+      "impactedCases": [
+        {
+          "id": "C29905893",
+          "title": "Verify custom Carousel Position for update group",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29905893",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29905894",
+          "title": "Verify rearrange Carousel Position for update group",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29905894",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29925266",
+          "title": "Verify the Custom carousels page loads.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29925266",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29925451",
+          "title": "Verify Custom carousel creation",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29925451",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29962545",
+          "title": "Validate announcement is visible correctly if set for particular org.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29962545",
+          "suite": "Galaxy 2.0 LX Web"
+        }
+      ],
+      "savedAt": "2026-06-22T05:32:33.516Z"
+    },
+    "tr-verify-the-images-are-broken-in-custom-carousels": {
+      "actionId": "tr-verify-the-images-are-broken-in-custom-carousels",
+      "title": "Verify The images are broken in custom carousels page(FEDMOD Administration)",
+      "suite": "Galaxy 2.0 LX Admin",
+      "jiraKeys": [
+        "EP-114081"
+      ],
+      "cursorPrompt": "Using TestRail MCP (project 49), create test case:\nTitle: Verify The images are broken in custom carousels page(FEDMOD Administration)\nSuite: Galaxy 2.0 LX Admin\nLink to Jira: EP-114081\nRelated tickets: EP-114081: Admin - Broken images for custom carousels in admin\n\nImpacted existing cases: C29925266, C29913039, C29956604, C29905893, C29925451, C29956605, C29956606, C29905894\n\nAfter creating the case, map it with @TestRailCases in the impacted automation test class.",
+      "created": {
+        "id": "C29998382",
+        "title": "Verify The images are broken in custom carousels page(FEDMOD Administration)",
+        "suite": "Galaxy 2.0 LX Admin",
+        "url": "https://testrail.csod.com/index.php?/cases/view/29998382",
+        "numericId": "29998382"
+      },
+      "impactedCases": [
+        {
+          "id": "C29925266",
+          "title": "Verify the Custom carousels page loads.",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29925266",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29913039",
+          "title": "Verify Navigation - Custom Page can be restricted to audience - Groups",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29913039",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29956604",
+          "title": "Verify that a new custom layout can be added in Homepage",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29956604",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29905893",
+          "title": "Verify custom Carousel Position for update group",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29905893",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29925451",
+          "title": "Verify Custom carousel creation",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29925451",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29956605",
+          "title": "Verify the char limit for custom layout label",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29956605",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29956606",
+          "title": "Verify that custom layout can be deleted",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29956606",
+          "suite": "Galaxy 2.0 LX Admin"
+        },
+        {
+          "id": "C29905894",
+          "title": "Verify rearrange Carousel Position for update group",
+          "url": "https://testrail.csod.com/index.php?/cases/view/29905894",
+          "suite": "Galaxy 2.0 LX Admin"
+        }
+      ],
+      "savedAt": "2026-06-22T05:35:04.241Z"
+    }
+  }
+}

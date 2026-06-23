@@ -49,6 +49,16 @@ export function DashboardPage({
             {analysis.ticketKeys.length} tickets · {analysis.automation.repo} ·{' '}
             {analysis.automation.environment}
             {analyzedAt && ` · ${formatAnalyzedAt(analyzedAt)}`}
+            {analysis.meta?.dataSources && (
+              <>
+                {' · '}
+                Jira: {analysis.meta.dataSources.jira}
+                {' · '}
+                TestRail: {analysis.meta.dataSources.testRail}
+                {' · '}
+                Automation: {analysis.meta.dataSources.automation}
+              </>
+            )}
           </p>
         </div>
         <ExportReportButton analysis={analysis} />

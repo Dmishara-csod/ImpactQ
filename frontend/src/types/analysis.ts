@@ -60,6 +60,9 @@ export interface TestRailMcpAction {
   steps: string[]
   cursorPrompt: string
   status: ActionStatus
+  jiraKeys?: string[]
+  impactedCases?: { id: string; title: string; url: string; suite: string }[]
+  createdCase?: { id: string; title: string; url: string; suite: string }
 }
 
 export interface AutomationTest {
@@ -112,6 +115,15 @@ export interface ImpactAnalysis {
     factors: string[]
   }
   recommendations: string[]
+  meta?: {
+    dataSources?: {
+      jira?: string
+      testRail?: string
+      automation?: string
+      analysis?: string
+    }
+    analyzedAt?: string
+  }
   actionPlan: {
     pr: PrActionPlan
     cursor: CursorMcpAction[]

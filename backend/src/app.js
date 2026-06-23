@@ -7,6 +7,8 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js'
 import analyzeRoutes from './routes/analyze.js'
 import historyRoutes from './routes/history.js'
 import integrationRoutes from './routes/integrations.js'
+import settingsRoutes from './routes/settings.js'
+import testRailRoutes from './routes/testrail.js'
 
 export function createApp() {
   const app = express()
@@ -36,6 +38,8 @@ export function createApp() {
   app.use('/api/analyze', analyzeRoutes)
   app.use('/api/history', historyRoutes)
   app.use('/api/integrations', integrationRoutes)
+  app.use('/api/settings', settingsRoutes)
+  app.use('/api/testrail', testRailRoutes)
 
   app.use(notFoundHandler)
   app.use(errorHandler)

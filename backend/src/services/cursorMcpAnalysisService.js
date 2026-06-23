@@ -1,4 +1,5 @@
 import { config, cursorConfigured } from '../config.js'
+import { filterAcceptanceCriteria } from '../utils/testScenarioUtils.js'
 
 export function cursorMcpConfigured() {
   return true
@@ -36,8 +37,31 @@ function ruleBasedGaps(tickets, testCases, automationTests) {
     edgeCases.push('Concurrent admin edits to theme and branding settings')
   }
 
-  if (testCases.length < tickets.length * 2) {
-    missingScenarios.push('Additional TestRail coverage needed for submitted stories')
+  const hasSearch = tickets.some((t) => /search|find|lookup/i.test(t.title + t.description))
+  const hasChannel = tickets.some((t) => /channel|carousel|feed|content/i.test(t.title + t.description))
+
+  if (hasSearch) {
+    missingScenarios.push('Search returns expected results for newly shared content')
+    edgeCases.push('Search index lag after content is published to channel')
+  }
+  if (hasChannel) {
+    missingScenarios.push('Channel carousel displays and navigates shared content correctly')
+    edgeCases.push('Empty channel state and pagination edge cases')
+  }
+
+  for (const ticket of tickets) {
+    for (const ac of filterAcceptanceCriteria(ticket.acceptanceCriteria || []).slice(0, 2)) {
+      const scenario = `Verify ${ac}`
+      if (!missingScenarios.some((s) => s.toLowerCase().includes(ac.slice(0, 24).toLowerCase()))) {
+        missingScenarios.push(scenario)
+      }
+    }
+  }
+
+  if (missingScenarios.length === 0 && tickets.length > 0) {
+    missingScenarios.push(
+      `End-to-end regression coverage for ${tickets.map((t) => t.key).join(', ')}`,
+    )
   }
   if (automationTests.filter((t) => t.groups?.includes('Regression')).length === 0) {
     missingAutomation.push('Regression automation for impacted admin flows')

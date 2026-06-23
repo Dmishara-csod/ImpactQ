@@ -12,7 +12,7 @@ interface ActionsPageProps {
 }
 
 export function ActionsPage({ analysis }: ActionsPageProps) {
-  const { pr, cursor, testRail } = analysis.actionPlan
+  const { pr, cursor = [], testRail = [] } = analysis.actionPlan ?? {}
 
   return (
     <div className="space-y-6">
@@ -47,11 +47,11 @@ export function ActionsPage({ analysis }: ActionsPageProps) {
         </TabsContent>
 
         <TabsContent value="cursor">
-          <CursorMcpPanel actions={cursor} />
+          <CursorMcpPanel analysis={analysis} actions={cursor} />
         </TabsContent>
 
         <TabsContent value="testrail">
-          <TestRailMcpPanel actions={testRail} />
+          <TestRailMcpPanel analysis={analysis} actions={testRail} />
         </TabsContent>
       </Tabs>
     </div>

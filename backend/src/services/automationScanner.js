@@ -3,6 +3,7 @@ import fsSync from 'fs'
 import path from 'path'
 
 import { config } from '../config.js'
+import { getSettings } from './settingsStore.js'
 
 const TEST_FILE_PATTERN = /Test\.java$/
 const TESTRAIL_ANNOTATION = /@TestRailCases\s*\(\s*testCasesId\s*=\s*"(\d+)"/g
@@ -199,10 +200,12 @@ function extractCodeImpact(pageFiles, testFiles) {
 }
 
 export function getAutomationStatus() {
+  const stored = getSettings()
+  const repoPath = stored.automationPath || config.automation.repoPath
   return {
-    repoPath: config.automation.repoPath,
-    environment: config.automation.environment,
-    repoName: config.automation.repoName,
-    exists: fsSync.existsSync(config.automation.repoPath),
+    repoPath,
+    environment: stored.environment || config.automation.environment,
+    repoName: stored.automationRepo || config.automation.repoName,
+    exists: fsSync.existsSync(repoPath),
   }
 }

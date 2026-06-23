@@ -10,10 +10,12 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { useCopyToClipboard } from '@/hooks/useCopyToClipboard'
-import type { ActionStatus, CursorMcpAction } from '@/types/analysis'
+import { buildFallbackCursorActions } from '@/lib/buildFallbackCursorActions'
+import type { ActionStatus, CursorMcpAction, ImpactAnalysis } from '@/types/analysis'
 
 interface CursorMcpPanelProps {
-  actions: CursorMcpAction[]
+  analysis: ImpactAnalysis
+  actions?: CursorMcpAction[]
 }
 
 const statusVariant: Record<ActionStatus, 'secondary' | 'warning' | 'success' | 'outline'> = {
@@ -29,8 +31,10 @@ const categoryIcon = {
   run: Terminal,
 }
 
-export function CursorMcpPanel({ actions }: CursorMcpPanelProps) {
+export function CursorMcpPanel({ analysis, actions = [] }: CursorMcpPanelProps) {
   const { copiedId, copy } = useCopyToClipboard()
+  const displayActions =
+    actions.length > 0 ? actions : buildFallbackCursorActions(analysis)
 
   return (
     <div className="space-y-6">
@@ -47,12 +51,13 @@ export function CursorMcpPanel({ actions }: CursorMcpPanelProps) {
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
           Open the galaxy-automation repo in Cursor. Copy a prompt below and paste it into
-          Cursor Agent with JetBrains and terminal MCP enabled.
+          Cursor Agent with JetBrains and terminal MCP enabled.{' '}
+          {displayActions.length} action{displayActions.length === 1 ? '' : 's'} ready.
         </CardContent>
       </Card>
 
       <div className="space-y-4">
-        {actions.map((action) => {
+        {displayActions.map((action) => {
           const Icon = categoryIcon[action.category]
 
           return (

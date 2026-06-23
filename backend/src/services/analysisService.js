@@ -4,6 +4,7 @@ import { AnalysisModel } from '../models/Analysis.js'
 import { config } from '../config.js'
 import { buildActionPlan, mapTicketImpact } from './actionPlanService.js'
 import { getJiraTickets, getTicketKeywords } from './jiraService.js'
+import { resolveAnalysisSettings } from './settingsStore.js'
 import { scanAutomationRepo } from './automationScanner.js'
 import { resolveTestCases } from './testRailService.js'
 import { detectCoverageGaps, generateRecommendations, buildCursorMcpGapAction } from './cursorMcpAnalysisService.js'
@@ -46,9 +47,11 @@ function computeRisk(ticketCount, moduleCount, gapCount) {
 
 export async function runAnalysis({ ticketKeys, settings = {} }) {
   const keys = ticketKeys?.length ? ticketKeys : ['GALXY-482']
-  const repoPath = settings.automationPath || config.automation.repoPath
-  const environment = settings.environment || config.automation.environment
-  const projectId = settings.testRailProjectId || config.testRail.projectId
+  const {
+    automationPath: repoPath,
+    environment,
+    testRailProjectId: projectId,
+  } = resolveAnalysisSettings(settings)
 
   let tickets = await getJiraTickets(keys)
   const keywords = getTicketKeywords(tickets)

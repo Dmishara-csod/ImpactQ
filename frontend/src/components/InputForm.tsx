@@ -23,6 +23,8 @@ interface InputFormProps {
   onSubmit: (input: AnalysisInput) => void
   isLoading: boolean
   history: AnalysisHistoryEntry[]
+  error?: string | null
+  onSettingsChange: (settings: import('@/lib/settings').AppSettings) => void
   onSelectHistory: (entry: AnalysisHistoryEntry) => void
   onRemoveHistory: (id: string) => void
 }
@@ -42,6 +44,8 @@ export function InputForm({
   onSubmit,
   isLoading,
   history,
+  error,
+  onSettingsChange,
   onSelectHistory,
   onRemoveHistory,
 }: InputFormProps) {
@@ -76,6 +80,12 @@ export function InputForm({
           galaxy-automation tests, coverage gaps, and release risk.
         </p>
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -157,7 +167,7 @@ export function InputForm({
       </Card>
 
       <div className="flex justify-center">
-        <SettingsPanel />
+        <SettingsPanel onSettingsChange={onSettingsChange} />
       </div>
 
       <AnalysisHistoryPanel

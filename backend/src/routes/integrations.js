@@ -7,6 +7,7 @@ import { config } from '../config.js'
 import { getAutomationStatus } from '../services/automationScanner.js'
 import { getCursorMcpStatus } from '../services/cursorMcpAnalysisService.js'
 import { getJiraStatus, verifyJiraConnection } from '../services/jiraService.js'
+import { getSettings } from '../services/settingsStore.js'
 import { getTestRailStatus } from '../services/testRailService.js'
 
 const router = Router()
@@ -29,6 +30,7 @@ router.get('/status', async (req, res, next) => {
     }
 
     res.json({
+      settings: getSettings(),
       jira: { ...jiraStatus, connection: jiraConnection },
       testRail: getTestRailStatus(),
       automation,

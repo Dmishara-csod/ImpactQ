@@ -1,4 +1,5 @@
 import { config, jiraConfigured } from '../config.js'
+import { filterAcceptanceCriteria } from '../utils/testScenarioUtils.js'
 
 const CATALOG = {
   'GALXY-482': {
@@ -137,14 +138,17 @@ function extractAcceptanceCriteria(description) {
       .split('\n')
       .map((l) => l.replace(/^[\s\-*•\d.)]+/, '').trim())
       .filter((l) => l.length > 3)
-    if (lines.length > 0) return lines.slice(0, 8)
+    const filtered = filterAcceptanceCriteria(lines)
+    if (filtered.length > 0) return filtered.slice(0, 8)
   }
 
   const bulletLines = text
     .split('\n')
     .map((l) => l.replace(/^[\s\-*•\d.)]+/, '').trim())
     .filter((l) => l.length > 8)
-  return bulletLines.length > 0 ? bulletLines.slice(0, 5) : [text.slice(0, 200)]
+  const filteredBullets = filterAcceptanceCriteria(bulletLines)
+  if (filteredBullets.length > 0) return filteredBullets.slice(0, 5)
+  return ['Feature behaves as specified in Jira']
 }
 
 function deriveKeywords(ticket) {
@@ -252,7 +256,7 @@ function buildCatalogTicket(key) {
 async function fetchJiraTicket(key) {
   try {
     const issue = await jiraFetch(
-      `issue/${key}?fields=summary,description,status,priority,issuetype,assignee,reporter,creator,labels,components,customfield_10002,customfield_10004,customfield_10006,created,updated`,
+      `issue/${key}?fields=summary,description,status,priority,issuetype,assignee,reporter,creator,labels,components,created,updated`,
     )
     return applyCatalogOverlay(parseJiraIssue(issue))
   } catch (err) {

@@ -87,7 +87,7 @@ export function IntegrationStatus({ settings }: IntegrationStatusProps) {
     fetchIntegrationStatus()
       .then(setBackendStatus)
       .catch(() => setBackendStatus(null))
-  }, [])
+  }, [settings.automationPath])
 
   const items = mapBackendStatus(backendStatus, settings)
 

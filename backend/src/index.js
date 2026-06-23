@@ -1,9 +1,13 @@
 import { createApp } from './app.js'
 import { config, jiraConfigured } from './config.js'
 import { connectDb } from './db/connect.js'
+import { initSettingsStore } from './services/settingsStore.js'
+import { initTestRailActionStore } from './services/testRailActionStore.js'
 import { verifyJiraConnection } from './services/jiraService.js'
 
 const dbConnected = await connectDb()
+await initSettingsStore()
+await initTestRailActionStore()
 
 if (jiraConfigured()) {
   const jiraCheck = await verifyJiraConnection()
