@@ -28,7 +28,7 @@ export function ActionChecklist({ analysis }: ActionChecklistProps) {
       })),
       ...analysis.actionPlan.cursor.map((a) => ({
         id: `cursor-${a.id}`,
-        label: `Cursor: ${a.title}`,
+        label: `Agent: ${a.title}`,
       })),
       ...analysis.actionPlan.testRail.map((a) => ({
         id: `tr-${a.id}`,

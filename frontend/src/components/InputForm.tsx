@@ -1,5 +1,5 @@
-import { type FormEvent, useMemo, useState } from 'react'
-import { ArrowRight, Plus, X } from 'lucide-react'
+import { type FormEvent, useEffect, useMemo, useState } from 'react'
+import { ArrowRight, FileText, Plus, X } from 'lucide-react'
 
 import { AnalysisHistoryPanel } from '@/components/AnalysisHistoryPanel'
 import { SettingsPanel } from '@/components/SettingsPanel'
@@ -16,7 +16,12 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { getAllCatalogKeys } from '@/data/jiraTicketCatalog'
 import type { AnalysisHistoryEntry } from '@/lib/analysisHistory'
+import {
+  getJiraKeyState,
+  KEY_CHIP_CLASS,
+} from '@/lib/jiraKeyValidation'
 import { parseTicketKeys } from '@/lib/parseTickets'
+import { fetchIntegrationStatus } from '@/services/api/analysisApi'
 import type { AnalysisInput } from '@/types/analysis'
 
 interface InputFormProps {
@@ -30,7 +35,7 @@ interface InputFormProps {
 const exampleSets = [
   {
     label: 'Theme & Branding (3 tickets)',
-    keys: ['GALXY-482', 'GALXY-1201', 'GALXY-890'],
+    keys: ['GXP-112', 'GXP-113', 'GXP-114'],
   },
   {
     label: 'Full admin sprint (4 tickets)',
@@ -46,13 +51,24 @@ export function InputForm({
   onRemoveHistory,
 }: InputFormProps) {
   const [rawInput, setRawInput] = useState('')
+  const [jiraConnected, setJiraConnected] = useState(false)
+
+  useEffect(() => {
+    fetchIntegrationStatus()
+      .then((s) => setJiraConnected(Boolean(s.jira.connection?.ok)))
+      .catch(() => setJiraConnected(false))
+  }, [])
 
   const parsedKeys = useMemo(() => parseTicketKeys(rawInput), [rawInput])
+  const hasValidKey = parsedKeys.some((k) => getJiraKeyState(k, jiraConnected) === 'valid')
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    if (parsedKeys.length === 0) return
-    onSubmit({ inputType: 'jira', ticketKeys: parsedKeys })
+    if (!hasValidKey) return
+    onSubmit({
+      inputType: 'jira',
+      ticketKeys: parsedKeys.filter((k) => getJiraKeyState(k, jiraConnected) !== 'invalid'),
+    })
   }
 
   function addKeys(keys: string[]) {
@@ -67,33 +83,38 @@ export function InputForm({
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div className="text-center">
-        <h2 className="text-3xl font-semibold tracking-tight">
-          Analyze testing impact
-        </h2>
-        <p className="mt-2 text-muted-foreground">
-          Submit one or more Jira stories to map impacted TestRail cases,
-          galaxy-automation tests, coverage gaps, and release risk.
+      <div>
+        <h2 className="text-2xl font-semibold tracking-tight">Analyze impact</h2>
+        <p className="mt-1 text-muted-foreground">
+          Map Jira changes to TestRail cases, automation coverage, and QA actions.
         </p>
       </div>
 
+      {!jiraConnected && (
+        <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-950 dark:border-amber-400/35 dark:bg-amber-500/15 dark:text-amber-100">
+          Using mock catalog — Jira API not configured. Demo keys from the catalog still work.
+        </div>
+      )}
+
       <Card>
         <CardHeader>
-          <CardTitle>Jira stories</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="size-4" />
+            Jira ticket keys
+          </CardTitle>
           <CardDescription>
-            Enter multiple ticket keys — one per line or comma-separated.
-            ImpactIQ scans galaxy-automation and TestRail project 49.
+            Enter one or more keys — comma or newline separated.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="jira-input">Jira ticket keys</Label>
+              <Label htmlFor="jira-input">Ticket keys</Label>
               <Textarea
                 id="jira-input"
                 value={rawInput}
                 onChange={(e) => setRawInput(e.target.value)}
-                placeholder={'GALXY-482\nGALXY-1201\nGALXY-890'}
+                placeholder={'GXP-112\nGXP-113\nGXP-114'}
                 rows={5}
                 disabled={isLoading}
               />
@@ -101,29 +122,35 @@ export function InputForm({
 
             {parsedKeys.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground">
-                  {parsedKeys.length} ticket{parsedKeys.length === 1 ? '' : 's'} detected
-                </p>
+                <p className="text-xs font-medium text-muted-foreground">Validation</p>
                 <div className="flex flex-wrap gap-2">
-                  {parsedKeys.map((key) => (
-                    <Badge key={key} variant="secondary" className="gap-1 pr-1">
-                      {key}
-                      <button
-                        type="button"
-                        className="rounded-full p-0.5 hover:bg-muted"
-                        onClick={() => removeKey(key)}
-                        aria-label={`Remove ${key}`}
+                  {parsedKeys.map((key) => {
+                    const state = getJiraKeyState(key, jiraConnected)
+                    return (
+                      <Badge
+                        key={key}
+                        variant="outline"
+                        className={`gap-1 pr-1 ${KEY_CHIP_CLASS[state]}`}
                       >
-                        <X className="size-3" />
-                      </button>
-                    </Badge>
-                  ))}
+                        {key}
+                        {state === 'unknown' && !jiraConnected && ' · mock?'}
+                        <button
+                          type="button"
+                          className="rounded-full p-0.5 hover:bg-black/5 dark:hover:bg-white/10"
+                          onClick={() => removeKey(key)}
+                          aria-label={`Remove ${key}`}
+                        >
+                          <X className="size-3" />
+                        </button>
+                      </Badge>
+                    )
+                  })}
                 </div>
               </div>
             )}
 
             <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground">Quick add examples</p>
+              <p className="text-xs font-medium text-muted-foreground">Quick add</p>
               <div className="flex flex-wrap gap-2">
                 {exampleSets.map((set) => (
                   <Button
@@ -145,11 +172,9 @@ export function InputForm({
             <Button
               type="submit"
               className="w-full"
-              disabled={isLoading || parsedKeys.length === 0}
+              disabled={isLoading || !hasValidKey}
             >
-              {isLoading
-                ? `Analyzing ${parsedKeys.length} ticket${parsedKeys.length === 1 ? '' : 's'}…`
-                : `Run impact analysis (${parsedKeys.length || 0} tickets)`}
+              {isLoading ? 'Analyzing impact…' : 'Analyze Impact'}
               {!isLoading && <ArrowRight className="size-4" />}
             </Button>
           </form>

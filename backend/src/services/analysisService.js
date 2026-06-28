@@ -45,7 +45,7 @@ function computeRisk(ticketCount, moduleCount, gapCount) {
 }
 
 export async function runAnalysis({ ticketKeys, settings = {} }) {
-  const keys = ticketKeys?.length ? ticketKeys : ['GALXY-482']
+  const keys = ticketKeys?.length ? ticketKeys : ['GXP-112']
   const repoPath = settings.automationPath || config.automation.repoPath
   const environment = settings.environment || config.automation.environment
   const projectId = settings.testRailProjectId || config.testRail.projectId

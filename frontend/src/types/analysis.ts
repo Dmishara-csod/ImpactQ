@@ -112,6 +112,10 @@ export interface ImpactAnalysis {
     factors: string[]
   }
   recommendations: string[]
+  meta?: {
+    analyzedAt?: string
+    dataSources?: Record<string, string>
+  }
   actionPlan: {
     pr: PrActionPlan
     cursor: CursorMcpAction[]

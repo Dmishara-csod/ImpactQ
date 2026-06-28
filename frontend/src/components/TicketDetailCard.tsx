@@ -1,6 +1,7 @@
 import { ExternalLink, Tag, User } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -12,7 +13,8 @@ import type { JiraTicket } from '@/types/analysis'
 
 interface TicketDetailCardProps {
   ticket: JiraTicket
-  defaultOpen?: boolean
+  affectedCaseCount?: number
+  onViewCases?: () => void
 }
 
 const priorityVariant = {
@@ -22,7 +24,14 @@ const priorityVariant = {
   Low: 'outline',
 } as const
 
-export function TicketDetailCard({ ticket }: TicketDetailCardProps) {
+export function TicketDetailCard({
+  ticket,
+  affectedCaseCount = 0,
+  onViewCases,
+}: TicketDetailCardProps) {
+  const noMatches =
+    ticket.impactedTestCases.length === 0 && ticket.impactedAutomation.length === 0
+
   return (
     <Card>
       <CardHeader>
@@ -45,12 +54,17 @@ export function TicketDetailCard({ ticket }: TicketDetailCardProps) {
             <Badge variant={priorityVariant[ticket.priority as keyof typeof priorityVariant] ?? 'outline'}>
               {ticket.priority}
             </Badge>
-            <Badge variant="secondary">{ticket.storyPoints} pts</Badge>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
         <p className="text-sm text-muted-foreground">{ticket.description}</p>
+
+        {noMatches && (
+          <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-sm text-amber-900 dark:text-amber-200">
+            No automation or TestRail cases matched this ticket — treat as a coverage gap signal.
+          </div>
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1 text-sm">
@@ -59,9 +73,6 @@ export function TicketDetailCard({ ticket }: TicketDetailCardProps) {
             </p>
             <p className="text-muted-foreground">Assignee: {ticket.assignee}</p>
             <p className="text-muted-foreground">Reporter: {ticket.reporter}</p>
-            <p className="text-xs text-muted-foreground">
-              Created {ticket.created} · Updated {ticket.updated}
-            </p>
           </div>
           <div className="space-y-1 text-sm">
             <p className="flex items-center gap-1.5 font-medium">
@@ -70,11 +81,6 @@ export function TicketDetailCard({ ticket }: TicketDetailCardProps) {
             <div className="flex flex-wrap gap-1.5">
               {ticket.modules.map((m) => (
                 <Badge key={m} variant="secondary">{m}</Badge>
-              ))}
-            </div>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {ticket.labels.map((label) => (
-                <Badge key={label} variant="outline">{label}</Badge>
               ))}
             </div>
           </div>
@@ -89,33 +95,16 @@ export function TicketDetailCard({ ticket }: TicketDetailCardProps) {
           </ul>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <p className="mb-2 text-sm font-medium">Impacted TestRail</p>
-            {ticket.impactedTestCases.length > 0 ? (
-              <div className="flex flex-wrap gap-1.5">
-                {ticket.impactedTestCases.map((id) => (
-                  <Badge key={id} variant="outline">{id}</Badge>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">No mapped cases yet</p>
-            )}
-          </div>
-          <div>
-            <p className="mb-2 text-sm font-medium">Impacted automation</p>
-            {ticket.impactedAutomation.length > 0 ? (
-              <ul className="space-y-1 text-xs text-muted-foreground">
-                {ticket.impactedAutomation.map((item) => (
-                  <li key={item}>
-                    <code>{item}</code>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-xs text-muted-foreground">No mapped tests yet</p>
-            )}
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+          <p className="text-sm text-muted-foreground">
+            Affected cases:{' '}
+            <span className="font-medium text-foreground">{affectedCaseCount}</span>
+          </p>
+          {onViewCases && (
+            <Button variant="outline" size="sm" onClick={onViewCases}>
+              View in Cases
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
