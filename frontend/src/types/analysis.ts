@@ -116,13 +116,8 @@ export interface ImpactAnalysis {
   }
   recommendations: string[]
   meta?: {
-    dataSources?: {
-      jira?: string
-      testRail?: string
-      automation?: string
-      analysis?: string
-    }
     analyzedAt?: string
+    dataSources?: Record<string, string>
   }
   actionPlan: {
     pr: PrActionPlan

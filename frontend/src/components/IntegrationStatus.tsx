@@ -37,7 +37,7 @@ function mapBackendStatus(
         status: 'offline',
       },
       { name: 'galaxy-automation', detail: settings.automationPath, status: 'offline' },
-      { name: 'Cursor MCP', detail: 'JetBrains · Terminal', status: 'ready' },
+      { name: 'AI Agent', detail: 'JetBrains · Terminal', status: 'ready' },
       { name: 'Environment', detail: settings.environment, status: 'ready' },
     ]
   }
@@ -66,7 +66,7 @@ function mapBackendStatus(
       status: backend.automation.exists ? 'connected' : 'offline',
     },
     {
-      name: 'Cursor MCP',
+      name: 'AI Agent',
       detail: backend.cursor?.hint ?? 'JetBrains · Playwright · TestRail',
       status: 'ready',
     },

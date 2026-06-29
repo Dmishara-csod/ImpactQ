@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { InputForm } from '@/components/InputForm'
 import { Layout, type AppView } from '@/components/Layout'
 import { ActionsPage } from '@/pages/ActionsPage'
+import { AffectedCasesPage } from '@/pages/AffectedCasesPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { TicketsPage } from '@/pages/TicketsPage'
 import {
@@ -16,14 +17,19 @@ import { analyzeChange } from '@/services/api/analysisApi'
 import { fetchSettings } from '@/services/api/settingsApi'
 import type { AnalysisInput, ImpactAnalysis } from '@/types/analysis'
 
+import type { ActionsFocus, ActionsTab } from '@/types/actions'
+
 export default function App() {
   const [view, setView] = useState<AppView>('input')
   const [isLoading, setIsLoading] = useState(false)
+  const [loadingTicketCount, setLoadingTicketCount] = useState(0)
   const [analysis, setAnalysis] = useState<ImpactAnalysis | null>(null)
   const [analyzedAt, setAnalyzedAt] = useState<string | null>(null)
   const [history, setHistory] = useState<AnalysisHistoryEntry[]>(() => loadHistory())
   const [settings, setSettings] = useState<AppSettings>(defaultSettings)
   const [error, setError] = useState<string | null>(null)
+  const [casesTicketFilter, setCasesTicketFilter] = useState<string | undefined>()
+  const [actionsFocus, setActionsFocus] = useState<ActionsFocus>({})
 
   useEffect(() => {
     fetchSettings()
@@ -31,12 +37,19 @@ export default function App() {
       .catch(() => {})
   }, [])
 
+  function resetAnalysisContext() {
+    setError(null)
+    setCasesTicketFilter(undefined)
+    setActionsFocus({})
+  }
+
   async function handleSubmit(input: AnalysisInput) {
     setView('dashboard')
     setIsLoading(true)
+    setLoadingTicketCount(input.ticketKeys.length)
     setAnalysis(null)
     setAnalyzedAt(null)
-    setError(null)
+    resetAnalysisContext()
 
     try {
       const result = await analyzeChange(input, settings)
@@ -57,7 +70,7 @@ export default function App() {
     setAnalysis(null)
     setAnalyzedAt(null)
     setIsLoading(false)
-    setError(null)
+    resetAnalysisContext()
   }
 
   function handleNavigate(nextView: AppView) {
@@ -73,7 +86,7 @@ export default function App() {
     setAnalyzedAt(entry.analyzedAt)
     setView('dashboard')
     setIsLoading(false)
-    setError(null)
+    resetAnalysisContext()
   }
 
   function handleRemoveHistory(id: string) {
@@ -81,6 +94,16 @@ export default function App() {
     if (analysis?.id === id) {
       handleNewAnalysis()
     }
+  }
+
+  function openCases(ticketKey?: string) {
+    setCasesTicketFilter(ticketKey)
+    setView('cases')
+  }
+
+  function openActions(tab?: ActionsTab, promptId?: string) {
+    setActionsFocus({ tab, promptId })
+    setView('actions')
   }
 
   return (
@@ -106,18 +129,27 @@ export default function App() {
           analysis={analysis}
           isLoading={isLoading}
           analyzedAt={analyzedAt}
-          settings={settings}
+          loadingTicketCount={loadingTicketCount}
           onOpenTickets={() => setView('tickets')}
-          onOpenActions={() => setView('actions')}
+          onOpenCases={() => openCases()}
+          onOpenActions={() => openActions()}
         />
       )}
 
       {view === 'tickets' && analysis && !isLoading && (
-        <TicketsPage analysis={analysis} />
+        <TicketsPage analysis={analysis} onOpenCases={openCases} />
+      )}
+
+      {view === 'cases' && analysis && !isLoading && (
+        <AffectedCasesPage
+          analysis={analysis}
+          ticketFilter={casesTicketFilter}
+          onOpenActions={openActions}
+        />
       )}
 
       {view === 'actions' && analysis && !isLoading && (
-        <ActionsPage analysis={analysis} />
+        <ActionsPage analysis={analysis} focus={actionsFocus} />
       )}
     </Layout>
   )

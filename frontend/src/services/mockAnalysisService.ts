@@ -27,7 +27,7 @@ export async function analyzeChange(
   await delay(1500)
 
   const ticketKeys =
-    input.ticketKeys.length > 0 ? input.ticketKeys : ['GALXY-482']
+    input.ticketKeys.length > 0 ? input.ticketKeys : ['GXP-112']
   const jiraBase = settings?.jiraBaseUrl ?? 'https://jira.csod.com'
   const repoPath = settings?.automationPath ?? 'C:\\Users\\vrutikpatwa\\galaxy-automation'
   const environment = settings?.environment ?? 'PRESTAGE'
@@ -267,7 +267,7 @@ mvn test -DsuiteXmlFile=src/test/resources/testng_suites/Admin_Sanity_Test_Suite
           category: 'code',
           title: 'Update AdminThemeAndBrandingTest.java',
           description:
-            'Use Cursor Agent to update Java Playwright tests mapped to TestRail cases 29906501, 29906508.',
+            'Use AI agent to update Java Playwright tests mapped to TestRail cases 29906501, 29906508.',
           mcpTools: ['filesystem', 'jetbrains', 'terminal'],
           targetFiles: [
             'src/test/java/com/qa/galaxy/admin/AdminThemeAndBrandingTest.java',
@@ -285,7 +285,7 @@ mvn test -DsuiteXmlFile=src/test/resources/testng_suites/Admin_Sanity_Test_Suite
           category: 'run',
           title: 'Run Admin Sanity suite via Maven',
           description:
-            'Execute impacted Admin tests through Cursor terminal against PRESTAGE environment.',
+            'Execute impacted Admin tests via terminal against PRESTAGE environment.',
           mcpTools: ['terminal', 'jetbrains'],
           targetFiles: [
             'src/test/resources/testng_suites/Admin_Sanity_Test_Suite.xml',
@@ -302,7 +302,7 @@ If tests fail, inspect Allure results in target/allure-results and fix locators.
           category: 'playwright',
           title: 'Fix AdminBrandingPage locators after UI change',
           description:
-            'Cursor inspects failing Playwright Java tests and patches page object selectors.',
+            'Inspect failing Playwright Java tests and patch page object selectors.',
           mcpTools: ['filesystem', 'terminal', 'jetbrains'],
           targetFiles: [
             'src/main/java/com/qa/galaxy/pages/admin/portal/portal_configuration/theme_and_branding/AdminBrandingPage.java',

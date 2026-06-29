@@ -34,32 +34,58 @@
   --secondary: oklch(0.96 0.01 265);
   --secondary-foreground: oklch(0.25 0.03 265);
   --muted: oklch(0.96 0.01 265);
-  --muted-foreground: oklch(0.5 0.02 265);
+  --muted-foreground: oklch(0.46 0.02 265);
   --accent: oklch(0.96 0.02 265);
   --accent-foreground: oklch(0.25 0.03 265);
   --destructive: oklch(0.55 0.22 25);
   --border: oklch(0.9 0.01 265);
   --input: oklch(0.9 0.01 265);
   --ring: oklch(0.45 0.18 265);
+  --impact-update: oklch(0.62 0.17 55);
+  --impact-manual: oklch(0.52 0.14 285);
+  --impact-gap: oklch(0.55 0.2 25);
+  --impact-covered: oklch(0.52 0.12 165);
+  --impact-update-bg: oklch(0.96 0.04 55);
+  --impact-manual-bg: oklch(0.96 0.03 285);
+  --impact-gap-bg: oklch(0.96 0.04 25);
+  --impact-covered-bg: oklch(0.96 0.03 165);
+  --impact-update-fg: oklch(0.38 0.12 55);
+  --impact-manual-fg: oklch(0.38 0.1 285);
+  --impact-gap-fg: oklch(0.42 0.16 25);
+  --impact-covered-fg: oklch(0.38 0.1 165);
 }
 
 .dark {
-  --background: oklch(0.145 0.02 265);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.19 0.02 265);
-  --card-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.65 0.18 265);
-  --primary-foreground: oklch(0.145 0.02 265);
-  --secondary: oklch(0.25 0.03 265);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.25 0.03 265);
-  --muted-foreground: oklch(0.65 0.02 265);
-  --accent: oklch(0.25 0.03 265);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.6 0.2 25);
-  --border: oklch(0.28 0.02 265);
-  --input: oklch(0.28 0.02 265);
-  --ring: oklch(0.55 0.18 265);
+  /* Page vs surface separation */
+  --background: oklch(0.12 0.018 265);
+  --foreground: oklch(0.96 0.008 265);
+  --card: oklch(0.2 0.022 265);
+  --card-foreground: oklch(0.96 0.008 265);
+  --primary: oklch(0.72 0.16 265);
+  --primary-foreground: oklch(0.12 0.018 265);
+  --secondary: oklch(0.24 0.022 265);
+  --secondary-foreground: oklch(0.94 0.008 265);
+  --muted: oklch(0.22 0.02 265);
+  --muted-foreground: oklch(0.74 0.02 265);
+  --accent: oklch(0.26 0.025 265);
+  --accent-foreground: oklch(0.96 0.008 265);
+  --destructive: oklch(0.68 0.18 25);
+  --border: oklch(0.34 0.025 265);
+  --input: oklch(0.24 0.022 265);
+  --ring: oklch(0.62 0.16 265);
+  /* Vivid impact tokens on dark surfaces */
+  --impact-update: oklch(0.78 0.15 55);
+  --impact-manual: oklch(0.75 0.13 285);
+  --impact-gap: oklch(0.72 0.17 25);
+  --impact-covered: oklch(0.75 0.12 165);
+  --impact-update-bg: oklch(0.28 0.06 55);
+  --impact-manual-bg: oklch(0.28 0.055 285);
+  --impact-gap-bg: oklch(0.28 0.07 25);
+  --impact-covered-bg: oklch(0.28 0.05 165);
+  --impact-update-fg: oklch(0.93 0.09 55);
+  --impact-manual-fg: oklch(0.93 0.07 285);
+  --impact-gap-fg: oklch(0.93 0.09 25);
+  --impact-covered-fg: oklch(0.93 0.07 165);
 }
 
 @layer base {
@@ -72,4 +98,94 @@
     margin: 0;
     min-height: 100svh;
   }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--muted) 25%,
+    color-mix(in oklch, var(--muted) 65%, white) 50%,
+    var(--muted) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.dark .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--muted) 25%,
+    color-mix(in oklch, var(--muted) 70%, oklch(0.32 0.02 265)) 50%,
+    var(--muted) 75%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.impact-badge {
+  border-width: 1px;
+  border-style: solid;
+}
+
+.impact-badge--update {
+  background-color: var(--impact-update-bg);
+  color: var(--impact-update-fg);
+  border-color: color-mix(in oklch, var(--impact-update) 40%, transparent);
+}
+
+.impact-badge--manual {
+  background-color: var(--impact-manual-bg);
+  color: var(--impact-manual-fg);
+  border-color: color-mix(in oklch, var(--impact-manual) 40%, transparent);
+}
+
+.impact-badge--gap {
+  background-color: var(--impact-gap-bg);
+  color: var(--impact-gap-fg);
+  border-color: color-mix(in oklch, var(--impact-gap) 45%, transparent);
+}
+
+.impact-badge--covered {
+  background-color: var(--impact-covered-bg);
+  color: var(--impact-covered-fg);
+  border-color: color-mix(in oklch, var(--impact-covered) 40%, transparent);
+}
+
+.dark .impact-badge--update {
+  border-color: color-mix(in oklch, var(--impact-update) 55%, transparent);
+}
+
+.dark .impact-badge--manual {
+  border-color: color-mix(in oklch, var(--impact-manual) 55%, transparent);
+}
+
+.dark .impact-badge--gap {
+  border-color: color-mix(in oklch, var(--impact-gap) 60%, transparent);
+}
+
+.dark .impact-badge--covered {
+  border-color: color-mix(in oklch, var(--impact-covered) 55%, transparent);
 }

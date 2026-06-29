@@ -3,7 +3,7 @@ import type { JiraTicket } from '@/types/analysis'
 type TicketTemplate = Omit<JiraTicket, 'key' | 'url'>
 
 const CATALOG: Record<string, TicketTemplate> = {
-  'GALXY-482': {
+  'GXP-112': {
     title: 'Admin Theme & Branding — page load and navigation',
     description:
       'As a Galaxy admin, I want the Theme and Branding configuration page to load reliably so I can manage portal appearance settings.',
@@ -26,7 +26,7 @@ const CATALOG: Record<string, TicketTemplate> = {
     created: '2025-05-12',
     updated: '2025-06-18',
   },
-  'GALXY-1201': {
+  'GXP-113': {
     title: 'Configure custom header logo in Theme & Branding',
     description:
       'Enable admins to upload and configure a custom header logo that appears across the Galaxy portal header.',
@@ -49,7 +49,7 @@ const CATALOG: Record<string, TicketTemplate> = {
     created: '2025-05-20',
     updated: '2025-06-19',
   },
-  'GALXY-890': {
+  'GXP-114': {
     title: 'Profile banner upload and profile page sync',
     description:
       'Support profile banner image upload in admin branding settings with validation and reflection on the user profile page.',
@@ -73,7 +73,7 @@ const CATALOG: Record<string, TicketTemplate> = {
     created: '2025-06-01',
     updated: '2025-06-17',
   },
-  'GALXY-1305': {
+  'GXP-115': {
     title: 'Create custom theme workflow',
     description:
       'Add ability for admins to create, edit, and apply custom themes from the Theme and Branding admin section.',

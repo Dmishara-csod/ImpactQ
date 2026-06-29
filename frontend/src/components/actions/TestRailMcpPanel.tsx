@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Check, ClipboardList, Copy, ExternalLink, Loader2, Plus, RefreshCw } from 'lucide-react'
+import { Check, ClipboardList, Copy, ExternalLink, Hand, Loader2, Plus, RefreshCw } from 'lucide-react'
 
+import { CopyButton } from '@/components/shared/CopyButton'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,11 +19,13 @@ import {
 } from '@/services/api/testRailApi'
 import { resolveTestRailActions } from '@/lib/buildFallbackTestRailActions'
 import { normalizeScenarioTitle } from '@/lib/testScenarioUtils'
+import { cn } from '@/lib/utils'
 import type { ActionStatus, ImpactAnalysis, TestRailMcpAction } from '@/types/analysis'
 
 interface TestRailMcpPanelProps {
   analysis: ImpactAnalysis
-  actions: TestRailMcpAction[]
+  actions?: TestRailMcpAction[]
+  highlightId?: string
 }
 
 const statusVariant: Record<ActionStatus, 'secondary' | 'warning' | 'success' | 'outline'> = {
@@ -57,7 +60,11 @@ function CaseLinks({ cases, emptyText }: { cases: TestRailCaseRef[]; emptyText: 
   )
 }
 
-export function TestRailMcpPanel({ analysis, actions = [] }: TestRailMcpPanelProps) {
+export function TestRailMcpPanel({
+  analysis,
+  actions = [],
+  highlightId,
+}: TestRailMcpPanelProps) {
   const { copiedId, copy } = useCopyToClipboard()
   const [runningId, setRunningId] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -143,7 +150,7 @@ export function TestRailMcpPanel({ analysis, actions = [] }: TestRailMcpPanelPro
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ClipboardList className="size-5" />
-            TestRail via Cursor MCP
+            TestRail prompts
           </CardTitle>
           <CardDescription>
             Click <strong>Copy & run in Cursor</strong> on each action below — copies the MCP
@@ -194,9 +201,13 @@ export function TestRailMcpPanel({ analysis, actions = [] }: TestRailMcpPanelPro
               ? impactedByAction[action.id]
               : action.impactedCases || []
           const showResults = showResultsFor === action.id
+          const highlighted = action.id === highlightId
 
           return (
-            <Card key={action.id}>
+            <Card
+              key={action.id}
+              className={cn(highlighted && 'ring-2 ring-primary ring-offset-2')}
+            >
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="flex gap-3">
@@ -212,8 +223,9 @@ export function TestRailMcpPanel({ analysis, actions = [] }: TestRailMcpPanelPro
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Badge variant={action.action === 'create' ? 'default' : 'secondary'}>
-                      {action.action}
+                    <Badge variant="outline" className="gap-1">
+                      <Hand className="size-3" />
+                      Manual step
                     </Badge>
                     <Badge variant={statusVariant[status]}>
                       {status.replace('_', ' ')}
@@ -297,6 +309,12 @@ export function TestRailMcpPanel({ analysis, actions = [] }: TestRailMcpPanelPro
                     ) : null}
                   </div>
                 )}
+
+                <CopyButton
+                  id={`${action.id}-prompt`}
+                  text={action.cursorPrompt}
+                  label="Copy prompt only"
+                />
               </CardContent>
             </Card>
           )

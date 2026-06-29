@@ -1,5 +1,6 @@
-import { CheckCircle2 } from 'lucide-react'
+import { ArrowRight, CheckCircle2 } from 'lucide-react'
 
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -10,14 +11,26 @@ import {
 
 interface RecommendationsCardProps {
   recommendations: string[]
+  onOpenActions?: () => void
 }
 
-export function RecommendationsCard({ recommendations }: RecommendationsCardProps) {
+export function RecommendationsCard({
+  recommendations,
+  onOpenActions,
+}: RecommendationsCardProps) {
   return (
-    <Card className="lg:col-span-2">
-      <CardHeader>
-        <CardTitle>Recommendations</CardTitle>
-        <CardDescription>Suggested next steps before release</CardDescription>
+    <Card>
+      <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
+        <div>
+          <CardTitle>Recommended next steps</CardTitle>
+          <CardDescription>Rule-based actions from the impact analysis</CardDescription>
+        </div>
+        {onOpenActions && (
+          <Button variant="ghost" size="sm" className="shrink-0 gap-1" onClick={onOpenActions}>
+            Actions
+            <ArrowRight className="size-3.5" />
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         <ul className="space-y-3">

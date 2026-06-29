@@ -1,7 +1,7 @@
-import { Bot, Check, Copy, Play, Terminal, Wrench } from 'lucide-react'
+import { Bot, Hand, Play, Terminal, Wrench } from 'lucide-react'
 
+import { CopyButton } from '@/components/shared/CopyButton'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -9,13 +9,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { useCopyToClipboard } from '@/hooks/useCopyToClipboard'
 import { buildFallbackCursorActions } from '@/lib/buildFallbackCursorActions'
+import { cn } from '@/lib/utils'
 import type { ActionStatus, CursorMcpAction, ImpactAnalysis } from '@/types/analysis'
 
-interface CursorMcpPanelProps {
-  analysis: ImpactAnalysis
+interface AgentPromptsPanelProps {
+  analysis?: ImpactAnalysis
   actions?: CursorMcpAction[]
+  highlightId?: string
 }
 
 const statusVariant: Record<ActionStatus, 'secondary' | 'warning' | 'success' | 'outline'> = {
@@ -31,10 +32,17 @@ const categoryIcon = {
   run: Terminal,
 }
 
-export function CursorMcpPanel({ analysis, actions = [] }: CursorMcpPanelProps) {
-  const { copiedId, copy } = useCopyToClipboard()
+export function AgentPromptsPanel({
+  analysis,
+  actions = [],
+  highlightId,
+}: AgentPromptsPanelProps) {
   const displayActions =
-    actions.length > 0 ? actions : buildFallbackCursorActions(analysis)
+    actions.length > 0
+      ? actions
+      : analysis
+        ? buildFallbackCursorActions(analysis)
+        : []
 
   return (
     <div className="space-y-6">
@@ -42,16 +50,14 @@ export function CursorMcpPanel({ analysis, actions = [] }: CursorMcpPanelProps) 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bot className="size-5" />
-            Cursor Pro + MCP
+            AI agent prompts
           </CardTitle>
           <CardDescription>
-            Run Java Playwright tests via Maven, fix page objects, and apply changes through
-            Cursor Agent using MCP tools (filesystem, terminal, JetBrains).
+            Copy each prompt into your AI agent with MCP tools enabled (Playwright, TestRail,
+            JetBrains) in your local environment configuration.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Open the galaxy-automation repo in Cursor. Copy a prompt below and paste it into
-          Cursor Agent with JetBrains and terminal MCP enabled.{' '}
           {displayActions.length} action{displayActions.length === 1 ? '' : 's'} ready.
         </CardContent>
       </Card>
@@ -59,9 +65,13 @@ export function CursorMcpPanel({ analysis, actions = [] }: CursorMcpPanelProps) 
       <div className="space-y-4">
         {displayActions.map((action) => {
           const Icon = categoryIcon[action.category]
+          const highlighted = action.id === highlightId
 
           return (
-            <Card key={action.id}>
+            <Card
+              key={action.id}
+              className={cn(highlighted && 'ring-2 ring-primary ring-offset-2')}
+            >
               <CardHeader className="pb-3">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div className="flex gap-3">
@@ -70,63 +80,36 @@ export function CursorMcpPanel({ analysis, actions = [] }: CursorMcpPanelProps) 
                     </div>
                     <div>
                       <CardTitle className="text-base">{action.title}</CardTitle>
-                      <CardDescription className="mt-1">
-                        {action.description}
-                      </CardDescription>
+                      <CardDescription className="mt-1">{action.description}</CardDescription>
                     </div>
                   </div>
-                  <Badge variant={statusVariant[action.status]}>
-                    {action.status.replace('_', ' ')}
-                  </Badge>
+                  <div className="flex gap-2">
+                    <Badge variant="outline" className="gap-1">
+                      <Hand className="size-3" />
+                      Manual step
+                    </Badge>
+                    <Badge variant={statusVariant[action.status]}>
+                      {action.status.replace('_', ' ')}
+                    </Badge>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div>
-                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">
-                    MCP tools
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {action.mcpTools.map((tool) => (
-                      <Badge key={tool} variant="outline">
-                        {tool}
-                      </Badge>
-                    ))}
-                  </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {action.mcpTools.map((tool) => (
+                    <Badge key={tool} variant="outline">
+                      {tool}
+                    </Badge>
+                  ))}
                 </div>
-                <div>
-                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">
-                    Target files
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {action.targetFiles.map((file) => (
-                      <code
-                        key={file}
-                        className="rounded bg-muted px-2 py-0.5 text-xs"
-                      >
-                        {file}
-                      </code>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">
-                    Cursor Agent prompt
-                  </p>
-                  <pre className="overflow-x-auto rounded-lg bg-muted p-3 text-xs whitespace-pre-wrap">
-                    {action.cursorPrompt}
-                  </pre>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() => copy(action.id, action.cursorPrompt)}
-                >
-                  {copiedId === action.id ? (
-                    <Check className="size-4" />
-                  ) : (
-                    <Copy className="size-4" />
-                  )}
-                  Copy & run in Cursor
-                </Button>
+                <pre className="overflow-x-auto rounded-lg border bg-muted p-3 text-xs whitespace-pre-wrap">
+                  {action.cursorPrompt}
+                </pre>
+                <CopyButton
+                  id={action.id}
+                  text={action.cursorPrompt}
+                  label="Copy prompt"
+                />
               </CardContent>
             </Card>
           )
@@ -135,3 +118,6 @@ export function CursorMcpPanel({ analysis, actions = [] }: CursorMcpPanelProps) 
     </div>
   )
 }
+
+/** @deprecated Use AgentPromptsPanel */
+export const CursorMcpPanel = AgentPromptsPanel
